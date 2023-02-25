@@ -1,10 +1,13 @@
 const db = require("../models");
+const UserService = require("../service/UserService");
 
 const User = db.users;
 
 const register = async (req, res) => {};
 
-const checkApi = async (req, res) => {};
+const checkApi = async (req, res) => {
+  UserService.checkApi();
+};
 
 const login = async (req, res) => {};
 

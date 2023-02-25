@@ -1,18 +1,18 @@
 module.exports = (sequelize, DataTypes) => {
-  const ShopeeApi = sequelize.define("shopeeApi", {
+  const VerificationLink = sequelize.define("verificationLink", {
     id: {
       type: DataTypes.BIGINT,
       autoIncrement: true,
       primaryKey: true,
     },
-    appId: {
+    code: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    secretKey: {
-      type: DataTypes.STRING,
+    expirationDate: {
+      type: DataTypes.DATE,
       allowNull: false,
     },
   });
-  return ShopeeApi;
+  return VerificationLink;
 };

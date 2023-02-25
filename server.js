@@ -10,8 +10,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 //routers
-app.use("/api/v1/user/", UserRouter);
-app.use("/api/v1/report/", ConvertionReportRouter);
+app.use("/api/v1/user", UserRouter);
+app.use("/api/v1/report", ConvertionReportRouter);
 
 //test api
 app.get("/test", (req, res) => {

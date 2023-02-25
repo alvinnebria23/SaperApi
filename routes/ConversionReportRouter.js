@@ -3,7 +3,7 @@ const ConvertionReportController = require("../controllers/ConvertionReportContr
 const router = require("express").Router();
 
 router.get(
-  "getConversionReport",
+  "/getConversionReport",
   ConvertionReportController.getConverstionReport
 );
 
