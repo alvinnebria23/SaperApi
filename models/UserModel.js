@@ -24,6 +24,7 @@ module.exports = (sequelize, DataTypes) => {
     isValidEmail: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
+      defaultValue: false,
     },
   });
   return User;

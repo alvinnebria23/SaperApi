@@ -4,6 +4,10 @@ const router = require("express").Router();
 
 router.post("/register", UserController.register);
 
+router.post("/resendVerification", UserController.resendVerification);
+
+router.post("/confirmVerification", UserController.confirmVerification);
+
 router.post("/checkApi", UserController.checkApi);
 
 router.post("/login", UserController.login);
@@ -14,6 +18,6 @@ router.post("/changeApi", UserController.changeApi);
 
 router.post("/update", UserController.update);
 
-router.post("/eleteUser", UserController.deleteUser);
+router.post("/deleteUser", UserController.deleteUser);
 
 module.exports = router;
