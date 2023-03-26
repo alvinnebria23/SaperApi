@@ -1,6 +1,6 @@
-const HttpCodes = require("../constants/HttpCodes");
-const { updateShopeeApi } = require("../service/ShopeeApiService");
-const UserService = require("../service/UserService");
+import HttpCodes  from "../constants/HttpCodes"
+import { updateShopeeApi }  from "../service/ShopeeApiService"
+import UserService from "../service/UserService";
 
 /**
  * Registers a new user with the details provided in the request body.
@@ -121,7 +121,7 @@ const deleteUser = async (req, res) => {
   }
 };
 
-module.exports = {
+export {
   register,
   resendVerification,
   confirmVerification,

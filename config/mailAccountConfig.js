@@ -1,5 +1,5 @@
-module.exports = {
-  SERVICE: "gmail",
-  USER: "sapersph@gmail.com",
-  PASSWORD: "hzaqbxturpgcdnuf",
-};
+const SERVICE = "gmail";
+const USER = "sapersph@gmail.com";
+const PASSWORD = "hzaqbxturpgcdnuf";
+
+export { SERVICE, USER, PASSWORD };

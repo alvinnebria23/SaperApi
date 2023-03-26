@@ -1,4 +1,4 @@
-const db = require("../models");
+import db from "../models";
 const ShopeeApi = db.shopeeApis;
 
 /**
@@ -39,4 +39,4 @@ const updateShopeeApi = async (userId, appId, secretKey) => {
   }
 };
 
-module.exports = { registerShopeeApi, updateShopeeApi };
+export { registerShopeeApi, updateShopeeApi };

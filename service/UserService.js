@@ -1,11 +1,11 @@
-const {
+import {
   registerVerification,
   updateVerification,
   checkVerification,
   deleteVerification,
-} = require("./VerificationLinkService");
-const db = require("../models");
-const { registerShopeeApi } = require("./ShopeeApiService");
+} from "./VerificationLinkService";
+import db from "../models";
+import { registerShopeeApi } from "./ShopeeApiService";
 const User = db.users;
 
 /**
@@ -122,7 +122,7 @@ const deleteUser = async (id) => {
   }
 };
 
-module.exports = {
+export {
   registerUser,
   resendVerification,
   confirmVerification,

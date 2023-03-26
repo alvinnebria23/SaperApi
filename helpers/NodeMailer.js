@@ -1,11 +1,11 @@
-const nodemailer = require("nodemailer");
-const mailAccountConfig = require("../config/mailAccountConfig");
+import { createTransport } from "nodemailer";
+import { USER, PASSWORD, SERVICE } from "../config/mailAccountConfig";
 
-const transporter = nodemailer.createTransport({
-  service: mailAccountConfig.SERVICE,
+const transporter = createTransport({
+  service: SERVICE,
   auth: {
-    user: mailAccountConfig.USER,
-    pass: mailAccountConfig.PASSWORD,
+    user: USER,
+    pass: PASSWORD,
   },
 });
 
@@ -18,7 +18,7 @@ const transporter = nodemailer.createTransport({
  */
 const sendVerificationMail = async (verificationCode, userMail) => {
   const result = await transporter.sendMail({
-    from: mailAccountConfig.USER,
+    from: USER,
     to: userMail,
     subject: "Email Verification - SAPERS",
     text: verificationCode.toString(),
@@ -26,4 +26,4 @@ const sendVerificationMail = async (verificationCode, userMail) => {
   console.log(JSON.stringify(result, null, 4));
 };
 
-module.exports = { sendVerificationMail };
+export { sendVerificationMail };

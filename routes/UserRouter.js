@@ -1,23 +1,34 @@
-const UserController = require("../controllers/UserController");
+import { Router } from 'express';
+import { 
+    register, 
+    resendVerification, 
+    confirmVerification, 
+    checkApi, 
+    login,  
+    changePassword,
+    changeApi,
+    update,
+    deleteUser,
+} from "../controllers/UserController";
 
-const router = require("express").Router();
+const router = Router();
 
-router.post("/register", UserController.register);
+router.post("/register", register);
 
-router.post("/resendVerification", UserController.resendVerification);
+router.post("/resendVerification", resendVerification);
 
-router.post("/confirmVerification", UserController.confirmVerification);
+router.post("/confirmVerification", confirmVerification);
 
-router.post("/checkApi", UserController.checkApi);
+router.post("/checkApi", checkApi);
 
-router.post("/login", UserController.login);
+router.post("/login", login);
 
-router.post("/changePassword", UserController.changePassword);
+router.post("/changePassword", changePassword);
 
-router.post("/changeApi", UserController.changeApi);
+router.post("/changeApi", changeApi);
 
-router.post("/update", UserController.update);
+router.post("/update", update);
 
-router.post("/deleteUser", UserController.deleteUser);
+router.post("/deleteUser", deleteUser);
 
-module.exports = router;
+export default router;

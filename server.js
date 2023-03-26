@@ -1,6 +1,6 @@
-const UserRouter = require("./routes/UserRouter");
-const ConvertionReportRouter = require("./routes/ConversionReportRouter");
-const express = require("express");
+import UserRouter from "./routes/UserRouter"
+import ConvertionReportRouter from "./routes/ConversionReportRouter"
+import express from 'express';
 const app = express();
 const PORT = process.env.PORT || 8080;
 

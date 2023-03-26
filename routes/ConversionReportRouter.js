@@ -1,10 +1,8 @@
-const ConvertionReportController = require("../controllers/ConvertionReportController");
+import { Router } from 'express';
+import { getConverstionReport } from '../controllers/ConvertionReportController';
 
-const router = require("express").Router();
+const router = Router();
 
-router.get(
-  "/getConversionReport",
-  ConvertionReportController.getConverstionReport
-);
+router.get('/getConversionReport', getConverstionReport);
 
-module.exports = router;
+export default router;

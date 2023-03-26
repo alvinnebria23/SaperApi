@@ -1,5 +1,5 @@
-const { sendVerificationMail } = require("../helpers/NodeMailer");
-const db = require("../models");
+import { sendVerificationMail } from "../helpers/NodeMailer";
+import db from "../models";
 const VerificationLink = db.verificationLinks;
 
 /**
@@ -91,7 +91,7 @@ const generateRandomNumber = () => {
   return Math.floor(Math.random() * 900000) + 100000;
 };
 
-module.exports = {
+export {
   registerVerification,
   updateVerification,
   checkVerification,

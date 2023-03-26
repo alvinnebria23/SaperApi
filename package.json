@@ -1,5 +1,6 @@
 {
   "name": "sapers-api",
+  "type": "module",
   "version": "1.0.0",
   "description": "Saper API",
   "main": "server.js",
