@@ -1,9 +1,21 @@
-const dbConfig = require("../config/dbConfig");
-const { Sequelize, DataTypes } = require("sequelize");
-
-const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
-  host: dbConfig.HOST,
-  dialect: dbConfig.dialect,
+import { DB, USER, PASSWORD, HOST, DIALECT as _dialect, POOL as _pool, PORT as _port} from "../config/dbConfig.js";
+import { Sequelize, DataTypes } from "sequelize";
+import { User } from "./UserModel.js";
+import { ShopeeApi } from "./ShopeeApiModel.js";
+import { VerificationLink } from "./VerificationLinkModel.js";
+import { USER_TABLE_VALUES } from "../constants/DbConstants.js";
+const sequelize = new Sequelize(DB, USER, PASSWORD, {
+  host: HOST,
+  dialect: _dialect,
+  operatorsAliases: false,
+  pool: {
+    max: _pool.max,
+    min: _pool.min,
+    acquire: _pool.acquire,
+    idle: _pool.idle,
+  },
+  port: _port,
+  logging: true,
 });
 
 sequelize
@@ -17,12 +29,9 @@ const db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
-db.users = require("./UserModel.js")(sequelize, DataTypes);
-db.shopeeApis = require("./ShopeeApiModel.js")(sequelize, DataTypes);
-db.verificationLinks = require("./VerificationLinkModel.js")(
-  sequelize,
-  DataTypes
-);
+db.users = User(sequelize, DataTypes);
+db.shopeeApis = ShopeeApi(sequelize, DataTypes);
+db.verificationLinks = VerificationLink(sequelize, DataTypes);
 
 //Relations
 db.users.hasOne(db.shopeeApis, {
@@ -62,8 +71,11 @@ db.verificationLinks.belongsTo(db.users, {
   onDelete: "CASCADE",
 });
 
-db.sequelize.sync({ force: false }).then(() => {
-  console.log("Re-sync donce!");
-});
+(async () => {
+  await sequelize.sync();
+  await db.users.bulkCreate(USER_TABLE_VALUES, {
+    updateOnDuplicate: ['id'],
+  });
+})();
 
-module.exports = db;
+export default db;

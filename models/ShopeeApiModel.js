@@ -1,4 +1,4 @@
-module.exports = (sequelize, DataTypes) => {
+const ShopeeApi = (sequelize, DataTypes) => {
   const ShopeeApi = sequelize.define("shopeeApi", {
     id: {
       type: DataTypes.BIGINT,
@@ -16,3 +16,5 @@ module.exports = (sequelize, DataTypes) => {
   });
   return ShopeeApi;
 };
+
+export { ShopeeApi };

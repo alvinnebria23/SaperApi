@@ -1,7 +1,7 @@
-import { Router } from 'express';
-import { getConverstionReport } from '../controllers/ConvertionReportController';
+import express from 'express';
+import { getConverstionReport } from '../controllers/ConvertionReportController.js';
 
-const router = Router();
+const router = express.Router();
 
 router.get('/getConversionReport', getConverstionReport);
 

@@ -1,0 +1,1 @@
+export const SHOPEE_API_ENDPOINT = "https://open-api.affiliate.shopee.ph/graphql";

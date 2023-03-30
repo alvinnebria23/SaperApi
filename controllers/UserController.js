@@ -1,6 +1,6 @@
-import HttpCodes  from "../constants/HttpCodes"
-import { updateShopeeApi }  from "../service/ShopeeApiService"
-import UserService from "../service/UserService";
+import { OK, ERROR } from "../constants/HttpCodes.js"
+import { updateShopeeApi }  from "../service/ShopeeApiService.js"
+import { register, resendVerification, confirmVerification, updatePassword, updateUser, remove } from "../service/UserService.js";
 
 /**
  * Registers a new user with the details provided in the request body.
@@ -9,13 +9,13 @@ import UserService from "../service/UserService";
  * @returns {Promise} - A Promise that resolves when the user is successfully registered and the response has been sent.
  * @throws {Error} - If there is an error registering the user or sending the response.
  */
-const register = async (req, res) => {
+const registerUser = async (req, res) => {
   try {
-    const user = await UserService.registerUser(req.body);
-    res.status(HttpCodes.OK).json(user);
+    const user = await register(req.body);
+    res.status(OK).json(user);
   } catch (error) {
     console.error(error);
-    res.status(HttpCodes.ERROR).json(error);
+    res.status(ERROR).json(error);
   }
 };
 
@@ -26,14 +26,14 @@ const register = async (req, res) => {
  * @returns {Promise} - A Promise that resolves when the email has been sent successfully.
  * @throws {Error} - If there is an error sending the email.
  */
-const resendVerification = async (req, res) => {
+const resendEmail = async (req, res) => {
   try {
     const { id, email } = req.body;
-    await UserService.resendVerification(id, email);
-    res.status(HttpCodes.OK).json({});
+    await resendVerification(id, email);
+    res.status(OK).json({});
   } catch (error) {
     console.error(error);
-    res.status(HttpCodes.ERROR).json(error);
+    res.status(ERROR).json(error);
   }
 };
 
@@ -44,18 +44,16 @@ const resendVerification = async (req, res) => {
  * @returns {Promise} - A Promise that resolves when the verification has been confirmed successfully.
  * @throws {Error} - If there is an error confirming the verification.
  */
-const confirmVerification = async (req, res) => {
+const confirmEmail = async (req, res) => {
   try {
     const { id, code } = req.body;
-    await UserService.confirmVerification(id, code);
-    res.status(HttpCodes.OK).json({});
+    await confirmVerification(id, code);
+    res.status(OK).json({});
   } catch (error) {
     console.error(error);
-    res.status(HttpCodes.ERROR).json(error);
+    res.status(ERROR).json(error);
   }
 };
-
-const checkApi = async (req, res) => {};
 
 const login = async (req, res) => {};
 
@@ -69,11 +67,11 @@ const login = async (req, res) => {};
 const changePassword = async (req, res) => {
   try {
     const { id, password } = req.body;
-    await UserService.changePassword(id, password);
-    res.status(HttpCodes.OK).json({});
+    await updatePassword(id, password);
+    res.status(OK).json({});
   } catch (error) {
     console.error(error);
-    res.status(HttpCodes.ERROR).json(error);
+    res.status(ERROR).json(error);
   }
 };
 
@@ -87,20 +85,20 @@ const changeApi = async (req, res) => {
   try {
     const { userId, appId, secretKey } = req.body;
     await updateShopeeApi(userId, appId, secretKey);
-    res.status(HttpCodes.OK).json({});
+    res.status(OK).json({});
   } catch (error) {
     console.error(error);
-    res.status(HttpCodes.ERROR).json(error);
+    res.status(ERROR).json(error);
   }
 };
 
-const update = async (req, res) => {
+const changeUserInformation = async (req, res) => {
   try {
-    await UserService.updateUser(req.body);
-    res.status(HttpCodes.OK).json({});
+    await updateUser(req.body);
+    res.status(OK).json({});
   } catch (error) {
     console.error(error);
-    res.status(HttpCodes.ERROR).json(error);
+    res.status(ERROR).json(error);
   }
 };
 
@@ -113,22 +111,21 @@ const update = async (req, res) => {
 const deleteUser = async (req, res) => {
   try {
     const { id } = req.body;
-    await UserService.deleteUser(id);
-    res.status(HttpCodes.OK).json({});
+    await remove(id);
+    res.status(OK).json({});
   } catch (error) {
     console.error(error);
-    res.status(HttpCodes.ERROR).json(error);
+    res.status(ERROR).json(error);
   }
 };
 
 export {
-  register,
-  resendVerification,
-  confirmVerification,
-  checkApi,
+  registerUser,
+  resendEmail,
+  confirmEmail,
   login,
   changePassword,
   changeApi,
-  update,
+  changeUserInformation,
   deleteUser,
 };

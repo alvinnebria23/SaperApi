@@ -1,4 +1,4 @@
-module.exports = (sequelize, DataTypes) => {
+const VerificationLink = (sequelize, DataTypes) => {
   const VerificationLink = sequelize.define("verificationLink", {
     id: {
       type: DataTypes.BIGINT,
@@ -16,3 +16,5 @@ module.exports = (sequelize, DataTypes) => {
   });
   return VerificationLink;
 };
+
+export { VerificationLink };

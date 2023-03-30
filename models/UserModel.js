@@ -1,4 +1,4 @@
-module.exports = (sequelize, DataTypes) => {
+const User = (sequelize, DataTypes) => {
   const User = sequelize.define("user", {
     id: {
       type: DataTypes.BIGINT,
@@ -29,3 +29,4 @@ module.exports = (sequelize, DataTypes) => {
   });
   return User;
 };
+export { User };

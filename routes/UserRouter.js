@@ -1,25 +1,22 @@
-import { Router } from 'express';
-import { 
-    register, 
-    resendVerification, 
-    confirmVerification, 
-    checkApi, 
-    login,  
+import express from 'express';
+import {
+    registerUser,
+    resendEmail,
+    confirmEmail,
+    login,
     changePassword,
     changeApi,
-    update,
+    changeUserInformation,
     deleteUser,
-} from "../controllers/UserController";
+  } from "../controllers/UserController.js";
 
-const router = Router();
+const router = express.Router();
 
-router.post("/register", register);
+router.post("/registerUser", registerUser);
 
-router.post("/resendVerification", resendVerification);
+router.post("/resendEmail", resendEmail);
 
-router.post("/confirmVerification", confirmVerification);
-
-router.post("/checkApi", checkApi);
+router.post("/confirmEmail", confirmEmail);
 
 router.post("/login", login);
 
@@ -27,7 +24,7 @@ router.post("/changePassword", changePassword);
 
 router.post("/changeApi", changeApi);
 
-router.post("/update", update);
+router.post("/changeUserInformation", changeUserInformation);
 
 router.post("/deleteUser", deleteUser);
 

@@ -1,5 +1,5 @@
-import { sendVerificationMail } from "../helpers/NodeMailer";
-import db from "../models";
+import { sendVerificationMail } from "../helpers/NodeMailer.js";
+import db from "../models/index.js";
 const VerificationLink = db.verificationLinks;
 
 /**

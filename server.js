@@ -1,8 +1,9 @@
-import UserRouter from "./routes/UserRouter"
-import ConvertionReportRouter from "./routes/ConversionReportRouter"
+import UserRouter from "./routes/UserRouter.js"
+import ConvertionReportRouter from "./routes/ConversionReportRouter.js"
+import ShopeeRouter from "./routes/ShopeeRouter.js";
 import express from 'express';
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 8081;
 
 //middlewares
 app.use(express.json());
@@ -12,10 +13,11 @@ app.use(express.urlencoded({ extended: true }));
 //routers
 app.use("/api/v1/user", UserRouter);
 app.use("/api/v1/report", ConvertionReportRouter);
+app.use("/api/v1/shopee", ShopeeRouter);
 
 //test api
 app.get("/test", (req, res) => {
-  res.json({ message: "Hello from api" });
+  res.send({ message: "Hello from alvin api" });
 });
 
 app.listen(PORT, () => {

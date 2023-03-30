@@ -3,9 +3,9 @@ import {
   updateVerification,
   checkVerification,
   deleteVerification,
-} from "./VerificationLinkService";
-import db from "../models";
-import { registerShopeeApi } from "./ShopeeApiService";
+} from "./VerificationLinkService.js";
+import db from "../models/index.js";
+import { registerShopeeApi } from "./ShopeeApiService.js";
 const User = db.users;
 
 /**
@@ -15,7 +15,7 @@ const User = db.users;
  * @returns {Promise} - A Promise that resolves to the newly created user object.
  * @throws {Error} - If there is an error creating the user object.
  */
-const registerUser = async (user) => {
+const register = async (user) => {
   try {
     //Create user
     const createdUser = await User.create({
@@ -73,7 +73,7 @@ const confirmVerification = async (userId, verificationCode) => {
  * @param {string} password - The new password to set for the user.
  * @throws {Error} - If there is an error changing the password.
  */
-const changePassword = async (id, password) => {
+const updatePassword = async (id, password) => {
   try {
     await User.update({ password: password }, { where: { id: id } });
   } catch (error) {
@@ -114,7 +114,7 @@ const updateUser = async (user) => {
  * @param {number} id - The ID of the user to delete.
  * @throws {Error} - If there is an error deleting the user.
  */
-const deleteUser = async (id) => {
+const remove = async (id) => {
   try {
     await User.destroy({ where: { id: id } });
   } catch (error) {
@@ -123,10 +123,10 @@ const deleteUser = async (id) => {
 };
 
 export {
-  registerUser,
+  register,
   resendVerification,
   confirmVerification,
-  changePassword,
+  updatePassword,
   updateUser,
-  deleteUser,
+  remove,
 };
