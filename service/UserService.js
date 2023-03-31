@@ -17,18 +17,24 @@ const User = db.users;
  */
 const register = async (user) => {
   try {
-    //Create user
-    const createdUser = await User.create({
-      email: user.email,
-      name: user.name,
-      password: user.password,
-      contactNumber: user.contactNumber,
-    });
-    //Create shopee api
-    registerShopeeApi(user.appId, user.secretKey, createdUser.id);
-    //Create verification link
-    await registerVerification(createdUser.id, createdUser.email);
-    return createdUser;
+    //Check if email was already verified
+    const existingUser = await User.findOne({ where: { email: user.email, isValidEmail: true } });
+    if(!existingUser){
+      // Create user
+      const createdUser = await User.create({
+        email: user.email,
+        name: user.fullName,
+        password: user.password,
+        contactNumber: user.contactNumber,
+        isValidEmail: false,
+      });
+      //Create shopee api
+      registerShopeeApi(user.appId, user.secretKey, createdUser.id);
+      //Create verification link
+      await registerVerification(createdUser.id, createdUser.email);
+      return createdUser;
+    }
+    return existingUser;
   } catch (error) {
     throw error;
   }

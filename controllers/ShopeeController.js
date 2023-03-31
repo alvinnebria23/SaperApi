@@ -1,12 +1,11 @@
 import axios from "axios";
 import crypto from 'crypto';
-import { OK, ERROR } from "../constants/HttpCodes.js"
+import { OK, ERROR, UNAUTHORIZED } from "../constants/HttpCodes.js"
 import { ShopeeRequestCLient } from "../client/ShopeeRequestClient.js";
 const checkApi = async (req, res) => {
 
   try {
     const { appId, secretKey } = req.body;
-    let isValid = false;
     const query = `{
           conversionReport(limit:1){ 
             nodes{ 
@@ -14,10 +13,19 @@ const checkApi = async (req, res) => {
             }
           }
         }`;
-    const { conversionReport } = await ShopeeRequestCLient(appId, secretKey, query);
-    res.status(OK).send();
+    const response = await ShopeeRequestCLient(appId, secretKey, query);
+    if(response.errors){
+      const { code } = response.errors[0].extensions;
+      if(code === 10020){
+        res.status(OK).json({ success: false, message: 'App Id and Secret key does not match.'})
+      }else{
+        res.status(OK).json({ success: false, message: 'There was an error. Please try again later.'})
+      }
+      return;
+    }
+    res.status(OK).json({ success: true, message: 'success'});
   } catch (error) {
-    res.status(ERROR).json(error);
+    res.status(OK).json({ success: false, message: 'There was an error. Please try again later.'})
   }
 };
 

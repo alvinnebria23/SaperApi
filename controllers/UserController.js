@@ -11,8 +11,9 @@ import { register, resendVerification, confirmVerification, updatePassword, upda
  */
 const registerUser = async (req, res) => {
   try {
-    const user = await register(req.body);
-    res.status(OK).json(user);
+    const { user } = req.body;
+    const createdUser = await register(user);
+    res.status(OK).json(createdUser);
   } catch (error) {
     console.error(error);
     res.status(ERROR).json(error);
