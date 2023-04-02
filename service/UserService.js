@@ -1,11 +1,8 @@
-import {
-  registerVerification,
-  updateVerification,
-  checkVerification,
-  deleteVerification,
-} from "./VerificationLinkService.js";
 import db from "../models/index.js";
-import { registerShopeeApi } from "./ShopeeApiService.js";
+import { registerShopeeApi, getShopeeApi } from "./ShopeeApiService.js";
+import { sendVerificationMail } from "../helpers/NodeMailer.js";
+import { Op } from "sequelize";
+import { generateToken } from "../helpers/Jwt.js";
 const User = db.users;
 
 /**
@@ -17,28 +14,65 @@ const User = db.users;
  */
 const register = async (user) => {
   try {
-    //Check if email was already verified
-    const existingUser = await User.findOne({ where: { email: user.email, isValidEmail: true } });
-    if(!existingUser){
-      // Create user
-      const createdUser = await User.create({
+    // Find or create user
+    const [createdUser, created] = await User.findOrCreate({
+      where: {
+        [Op.and]:[{ email:user.email }, { isValidEmail: true }]
+      },
+      defaults: {
         email: user.email,
         name: user.fullName,
         password: user.password,
         contactNumber: user.contactNumber,
         isValidEmail: false,
-      });
-      //Create shopee api
-      registerShopeeApi(user.appId, user.secretKey, createdUser.id);
-      //Create verification link
-      await registerVerification(createdUser.id, createdUser.email);
-      return createdUser;
+      },
+    });
+    if(!created){
+      return null;
     }
-    return existingUser;
+
+    //Create shopee api
+    registerShopeeApi(user.appId, user.secretKey, createdUser.id);
+    // send email verification
+    const token = generateToken({ id: createdUser.id, email: createdUser.email }, '7d');
+    await sendVerificationMail(createdUser.id, createdUser.email, token);
+    return createdUser;
   } catch (error) {
     throw error;
   }
 };
+
+/**
+ * Authenticates a user with the given email and password and returns the authenticated user object.
+ * @param {Object} credentials - The credentials object containing the email and password of the user to be authenticated.
+ * @returns {Promise} - A Promise that resolves to an object containing a boolean value indicating whether the user is found or not, and the user object itself if found.
+ * @throws {Error} - If there is an error finding the user or authenticating the user.
+ */
+const login = async ({ email, password }) => {
+  try {
+    // Find the user with the given email
+    const user = await User.findOne({
+      where: {
+        [Op.and]:[{ email:email }, { isValidEmail: true }]
+      }
+    });
+    if (!user) {
+      return { isFound: false, message: 'Email is not yet registered or verified.'};
+    }
+    if (!User.validPassword(password, user.password)) {
+      return { isFound: false, message: 'Email and password does not match.'};
+    }
+    const existedUser = user.get({ plain: true });
+    const apiCredentials = await getShopeeApi(user.id);
+    existedUser.appId = apiCredentials.appId;
+    existedUser.secretKey = apiCredentials.secretKey;
+    return { isFound: true, user: existedUser };
+  } catch (error) {
+    console.error(error);
+    return { isFound: false, message: 'There was an error. Please try again later.'};
+  }
+}
+
 
 /**
  * Resends the email verification to the specified user.
@@ -49,67 +83,6 @@ const register = async (user) => {
 const resendVerification = async (userId, userMail) => {
   try {
     await updateVerification(userId, userMail);
-  } catch (error) {
-    throw error;
-  }
-};
-
-/**
- * Confirms user email verification using the given user ID and verification code.
- * If the verification is successful, the user's email is marked as valid and the verification link is deleted.
- * @param {*} userId - The ID of the user to confirm the verification for.
- * @param {*} verificationCode - The verification code to confirm the user's email.
- * @throws Will throw an error if there is an issue checking the verification or updating the user's email validity status.
- */
-const confirmVerification = async (userId, verificationCode) => {
-  try {
-    const exist = await checkVerification(userId, verificationCode);
-    if (exist) {
-      await User.update({ isValidEmail: true }, { where: { id: userId } });
-      await deleteVerification(userId);
-    }
-  } catch (error) {
-    throw error;
-  }
-};
-
-/**
- * Changes the password of the user with the provided ID to the new password.
- * @param {number} id - The ID of the user to change the password for.
- * @param {string} password - The new password to set for the user.
- * @throws {Error} - If there is an error changing the password.
- */
-const updatePassword = async (id, password) => {
-  try {
-    await User.update({ password: password }, { where: { id: id } });
-  } catch (error) {
-    throw error;
-  }
-};
-
-/**
- * Updates the information of the user with the provided user object and creates a new verification link.
- * @param {Object} user - An object containing the updated user information.
- * @throws {Error} - If there is an error updating the user information or creating a new verification link.
- */
-const updateUser = async (user) => {
-  try {
-    const origUser = await User.findOne({ where: { id: user.id } });
-    if (origUser) {
-      const origMail = origUser.email;
-      //Update user
-      await User.update({
-        email: user.email,
-        name: user.name,
-        contactNumber: contactNumber,
-        isValidEmail: false,
-      });
-      //Reverification
-      if (origMail !== user.email) {
-        //Create verification link
-        await registerVerification(user.id, user.email);
-      }
-    }
   } catch (error) {
     throw error;
   }
@@ -128,11 +101,49 @@ const remove = async (id) => {
   }
 };
 
+/**
+ * Finds a user with the provided email address in the database and checks if their email address is valid.
+ * @param {string} email - The email address to search for.
+ * @returns {object} - An object with a single property, isTaken, indicating whether the email address is already associated with a valid user account.
+ * @throws {Error} - If there is an error searching the database for the email address.
+ */
+const findEmail = async (email) => {
+  try {
+    const user = await User.findOne({
+      where: {
+        [Op.and]:[{ email:email }, { isValidEmail: true }]
+      }
+    });
+    if(user){
+      return { isTaken: true };
+    }
+    return { isTaken: false };
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
+ * Finds a user with the provided email address in the database and checks if their email address is valid.
+ * @param {string} email - The email address to search for.
+ * @returns {object} - An object with a single property, isTaken, indicating whether the email address is already associated with a valid user account.
+ * @throws {Error} - If there is an error searching the database for the email address.
+ */
+const updateUser = async (data, where) => {
+  try {
+    const user = await User.update(data,{ where : where });
+    return user;
+  } catch (error) {
+    throw error;
+  }
+};
+
+
 export {
   register,
   resendVerification,
-  confirmVerification,
-  updatePassword,
   updateUser,
   remove,
+  login,
+  findEmail,
 };

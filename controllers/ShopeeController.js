@@ -3,7 +3,6 @@ import crypto from 'crypto';
 import { OK, ERROR, UNAUTHORIZED } from "../constants/HttpCodes.js"
 import { ShopeeRequestCLient } from "../client/ShopeeRequestClient.js";
 const checkApi = async (req, res) => {
-
   try {
     const { appId, secretKey } = req.body;
     const query = `{
@@ -29,6 +28,31 @@ const checkApi = async (req, res) => {
   }
 };
 
+const conversionReport = async (req, res) => {
+  try {
+    const { parameters, appId, secretKey } = req.body;
+    const query = getConversionReportQuery(parameters);
+    const response = await ShopeeRequestCLient(appId, secretKey, query);
+    res.status(OK).json(response);
+  } catch (error) {
+    res.status(OK).json({ data: null })
+  }
+};
+
+const getConversionReportQuery = (parameters) => {
+  return `{
+    conversionReport(${parameters}){ 
+      nodes{ 
+        totalCommission
+        totalBrandCommission
+        shopeeCommissionCapped
+        sellerCommission
+        conversionStatus 
+      }
+    }
+  }`;
+}
 export {
   checkApi,
+  conversionReport,
 };

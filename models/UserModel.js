@@ -1,3 +1,5 @@
+import { genSaltSync, compareSync, hashSync } from 'bcrypt';
+
 const User = (sequelize, DataTypes) => {
   const User = sequelize.define("user", {
     id: {
@@ -26,7 +28,20 @@ const User = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: false,
     },
+  }, {
+    hooks: {
+      beforeCreate: (user) => {
+        const salt = genSaltSync(2);
+        user.password = hashSync(user.password, salt);
+      }
+    }
   });
+
+  User.validPassword = function (password, hashedPassword) {
+    return compareSync(password, hashedPassword);
+  }
+
   return User;
 };
+
 export { User };

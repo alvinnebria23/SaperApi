@@ -2,7 +2,6 @@ import { DB, USER, PASSWORD, HOST, DIALECT as _dialect, POOL as _pool, PORT as _
 import { Sequelize, DataTypes } from "sequelize";
 import { User } from "./UserModel.js";
 import { ShopeeApi } from "./ShopeeApiModel.js";
-import { VerificationLink } from "./VerificationLinkModel.js";
 import { USER_TABLE_VALUES } from "../constants/DbConstants.js";
 const sequelize = new Sequelize(DB, USER, PASSWORD, {
   host: HOST,
@@ -31,7 +30,6 @@ db.sequelize = sequelize;
 
 db.users = User(sequelize, DataTypes);
 db.shopeeApis = ShopeeApi(sequelize, DataTypes);
-db.verificationLinks = VerificationLink(sequelize, DataTypes);
 
 //Relations
 db.users.hasOne(db.shopeeApis, {
@@ -44,24 +42,6 @@ db.users.hasOne(db.shopeeApis, {
   onDelete: "CASCADE",
 });
 db.shopeeApis.belongsTo(db.users, {
-  sourceKey: "id",
-  foreignKey: {
-    name: "userId",
-    allowNull: false,
-  },
-  onUpdate: "CASCADE",
-  onDelete: "CASCADE",
-});
-db.users.hasOne(db.verificationLinks, {
-  sourceKey: "id",
-  foreignKey: {
-    name: "userId",
-    allowNull: false,
-  },
-  onUpdate: "CASCADE",
-  onDelete: "CASCADE",
-});
-db.verificationLinks.belongsTo(db.users, {
   sourceKey: "id",
   foreignKey: {
     name: "userId",

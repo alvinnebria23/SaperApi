@@ -39,4 +39,20 @@ const updateShopeeApi = async (userId, appId, secretKey) => {
   }
 };
 
-export { registerShopeeApi, updateShopeeApi };
+/**
+* Retrieves the Shopee API information for the user with the provided user ID.
+* @param {number} userId - The ID of the user to retrieve the Shopee API information for.
+* @throws {Error} - If there is an error retrieving the Shopee API information.
+* @returns {Promise<ShopeeApi>} - A Promise that resolves with the Shopee API information for the user.
+*/
+const getShopeeApi = async (userId) => {
+  try {
+    const apiCredentials =  await ShopeeApi.findOne({ where: { userId: userId }});
+    return apiCredentials.get({ plain: true });
+  } catch (error) {
+    throw error;
+  }
+};
+
+
+export { registerShopeeApi, updateShopeeApi, getShopeeApi };
