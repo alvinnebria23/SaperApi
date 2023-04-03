@@ -1,17 +1,10 @@
-import axios from "axios";
-import crypto from 'crypto';
 import { OK, ERROR, UNAUTHORIZED } from "../constants/HttpCodes.js"
 import { ShopeeRequestCLient } from "../client/ShopeeRequestClient.js";
+import { getConversionReport, getConversionReportQuery } from "../helpers/ConversionReport.js";
 const checkApi = async (req, res) => {
   try {
     const { appId, secretKey } = req.body;
-    const query = `{
-          conversionReport(limit:1){ 
-            nodes{ 
-              grossCommission 
-            }
-          }
-        }`;
+    const query = getConversionReportQuery('limit:1');
     const response = await ShopeeRequestCLient(appId, secretKey, query);
     if(response.errors){
       const { code } = response.errors[0].extensions;
@@ -30,28 +23,13 @@ const checkApi = async (req, res) => {
 
 const conversionReport = async (req, res) => {
   try {
-    const { parameters, appId, secretKey } = req.body;
-    const query = getConversionReportQuery(parameters);
-    const response = await ShopeeRequestCLient(appId, secretKey, query);
-    res.status(OK).json(response);
+    const { appId, secretKey, parameters} = req.body;
+    const conversionReportArray = await getConversionReport(appId, secretKey,  parameters);
+    res.status(OK).json(conversionReportArray);
   } catch (error) {
     res.status(OK).json({ data: null })
   }
 };
-
-const getConversionReportQuery = (parameters) => {
-  return `{
-    conversionReport(${parameters}){ 
-      nodes{ 
-        totalCommission
-        totalBrandCommission
-        shopeeCommissionCapped
-        sellerCommission
-        conversionStatus 
-      }
-    }
-  }`;
-}
 export {
   checkApi,
   conversionReport,
