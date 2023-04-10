@@ -1,9 +1,9 @@
 import express from 'express';
-import { checkApi, conversionReport } from '../controllers/ShopeeController.js';
+import { checkApi, dashboard } from '../controllers/ShopeeController.js';
 
 const router = express.Router();
 
 router.post('/checkApi', checkApi);
-router.post('/conversionReport', conversionReport)
+router.post('/dashboard', dashboard)
 
 export default router;
