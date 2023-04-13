@@ -36,6 +36,7 @@ const getConversionReportQuery = (parameters) => {
             itemTotalCommission
             displayItemStatus
             itemShopeeCommissionRate
+            itemSellerCommissionRate
             qty
           }
         }
@@ -67,23 +68,27 @@ const processDashboard = async (conversionReportArray) => {
     totals.totalShopeeCommission += parseFloat(conversionNode.shopeeCommissionCapped);
     totals.totalSellerCommission += parseFloat(conversionNode.sellerCommission);
   
-    for (const order of conversionNode.orders) {
-      totals.totalOrder += order.items.length;
-      
-      for (const item of order.items) {
-        totals.totalCommission += parseFloat(item.itemTotalCommission);
-        totals.totalAmountOrder += parseFloat(item.itemPrice) * item.qty;
-  
-        switch (item.displayItemStatus) {
-          case "CANCELLED":
-            totals.totalCancelled += parseFloat(item.itemTotalCommission);
-            break;
-          case "COMPLETED":
-            totals.totalCompleted += parseFloat(item.itemTotalCommission);
-            break;
-          case "PENDING":
-            totals.totalPending += parseFloat(item.itemTotalCommission);
-            break;
+    if(conversionNode.orders){
+      for (const order of conversionNode.orders) {
+        totals.totalOrder += order.items.length;
+        
+        for (const item of order.items) {
+          totals.totalCommission += parseFloat(item.itemTotalCommission);
+          totals.totalAmountOrder += parseFloat(item.itemPrice) * item.qty;
+    
+          switch (item.displayItemStatus) {
+            case "CANCELLED":
+              const totalRate =  (parseFloat(item.itemShopeeCommissionRate) + parseFloat(item.itemSellerCommissionRate)) / 100;
+              const totalPrice = (parseFloat(item.itemPrice) * item.qty);
+              totals.totalCancelled += totalPrice * totalRate;
+              break;
+            case "COMPLETED":
+              totals.totalCompleted += parseFloat(item.itemTotalCommission);
+              break;
+            case "PENDING":
+              totals.totalPending += parseFloat(item.itemTotalCommission);
+              break;
+          }
         }
       }
     }
@@ -110,8 +115,6 @@ const processDashboard = async (conversionReportArray) => {
           { type: 'amount', id: 6, name: "Cancelled", value: parseInt(totalCancelled).toLocaleString()},
           { type: 'amount', id: 7, name: "Completed", value: parseInt(totalCompleted).toLocaleString()},
           { type: 'amount', id: 8, name: "Pending", value: parseInt(totalPending).toLocaleString()},
-          { type: 'number', id: 9, name: "Total Clicks", value: 0},
-          { type: 'amount', id: 10, name: "Net Profit (Less Adspent/Tax 10%)", value: 0},
       ], topFiveSubIds: topFiveSubIds, 
   };
 };
