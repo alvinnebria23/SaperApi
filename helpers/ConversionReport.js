@@ -102,10 +102,15 @@ const processDashboard = async (conversionReportArray) => {
       return sum;
     }, 0);
     
-    return { subId, totalCommission: Math.round(total).toLocaleString() };
+    return { subId, totalCommission: Math.round(total) };
   });
   totalCommissionOfSubIds.sort((a, b) => b.totalCommission - a.totalCommission);
-  const topFiveSubIds = totalCommissionOfSubIds.slice(0 , 5);
+  const topFiveSubIds = totalCommissionOfSubIds.slice(0, 5).map(subId => {
+    return {
+      ...subId,
+      totalCommission: subId.totalCommission.toLocaleString()
+    };
+  });
   return { overAllTotal: [
           { type: 'amount', id: 1, name: "Total Commission", value: parseInt(totalCommission).toLocaleString()},
           { type: 'number', id: 2, name: "Total Order", value: totalOrder.toLocaleString()},
@@ -119,4 +124,8 @@ const processDashboard = async (conversionReportArray) => {
   };
 };
 
-export { getConversionReport, getConversionReportQuery, processDashboard };
+const processConversion = async (conversionReportArray) => {
+  console.log('CONVERSION REPORT');
+};
+
+export { getConversionReport, getConversionReportQuery, processDashboard, processConversion };
