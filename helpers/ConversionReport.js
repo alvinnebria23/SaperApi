@@ -60,7 +60,7 @@ const processDashboard = async (conversionReportArray) => {
     totalAmountOrder,
     totalShopeeCommission,
     totalSellerCommission,
-    totalCancelled,
+    totalUnpaid,
     totalCompleted,
     totalPending,
     totalOrder,
@@ -77,10 +77,8 @@ const processDashboard = async (conversionReportArray) => {
           totals.totalAmountOrder += parseFloat(item.itemPrice) * item.qty;
     
           switch (item.displayItemStatus) {
-            case "CANCELLED":
-              const totalRate =  (parseFloat(item.itemShopeeCommissionRate) + parseFloat(item.itemSellerCommissionRate)) / 100;
-              const totalPrice = (parseFloat(item.itemPrice) * item.qty);
-              totals.totalCancelled += totalPrice * totalRate;
+            case "UNPAID":
+              totals.totalUnpaid += parseFloat(item.itemTotalCommission);
               break;
             case "COMPLETED":
               totals.totalCompleted += parseFloat(item.itemTotalCommission);
@@ -93,7 +91,7 @@ const processDashboard = async (conversionReportArray) => {
       }
     }
     return totals;
-  }, { totalCommission: 0, totalAmountOrder: 0, totalShopeeCommission: 0, totalSellerCommission: 0, totalCancelled: 0, totalCompleted: 0, totalPending: 0,  totalOrder: 0});
+  }, { totalCommission: 0, totalAmountOrder: 0, totalShopeeCommission: 0, totalSellerCommission: 0, totalUnpaid: 0, totalCompleted: 0, totalPending: 0,  totalOrder: 0});
   const totalCommissionOfSubIds = uniqueSubIds.map((subId) => {
     const total = conversionReportArray.reduce((sum, conversionNode) => {
       if (conversionNode.utmContent === subId) {
@@ -117,7 +115,7 @@ const processDashboard = async (conversionReportArray) => {
           { type: 'amount', id: 3, name: "Total Amount Order", value: parseInt(totalAmountOrder).toLocaleString()},
           { type: 'amount', id: 4, name: "Shopee Commission", value: parseInt(totalShopeeCommission).toLocaleString()},
           { type: 'amount', id: 5, name: "Seller Commission", value: parseInt(totalSellerCommission).toLocaleString()},
-          { type: 'amount', id: 6, name: "Cancelled", value: parseInt(totalCancelled).toLocaleString()},
+          { type: 'amount', id: 6, name: "Unpaid", value: parseInt(totalUnpaid).toLocaleString()},
           { type: 'amount', id: 7, name: "Completed", value: parseInt(totalCompleted).toLocaleString()},
           { type: 'amount', id: 8, name: "Pending", value: parseInt(totalPending).toLocaleString()},
       ], topFiveSubIds: topFiveSubIds, 
@@ -125,7 +123,28 @@ const processDashboard = async (conversionReportArray) => {
 };
 
 const processConversion = async (conversionReportArray) => {
-  console.log('CONVERSION REPORT');
+  const result = [];
+  conversionReportArray.forEach(node => {
+    const utmContent = node.utmContent.replace(/-{2,}/g, '');
+    const path = utmContent.split('-');
+    let currentNode = result;
+  
+    path.forEach(part => {
+      let existingNode = currentNode.find(n => n.name === part);
+      if (!existingNode) {
+        const newNode = {
+          name: part,
+          id:  part,
+          children: []
+        };
+        currentNode.push(newNode);
+        currentNode = newNode.children;
+      } else {
+        currentNode = existingNode.children;
+      }
+    });
+  });
+  return result;
 };
 
 export { getConversionReport, getConversionReportQuery, processDashboard, processConversion };

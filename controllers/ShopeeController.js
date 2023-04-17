@@ -21,6 +21,15 @@ const checkApi = async (req, res) => {
   }
 };
 
+const initial = async (req, res) => {
+  const { appId, secretKey, parameters } = req.body;
+  const conversionReportArray = await getConversionReport(appId, secretKey, parameters);
+  const dashboardData = await processDashboard(conversionReportArray);
+  const conversionData = await processConversion(conversionReportArray);
+  dashboardData.conversionReport = conversionData;
+  res.status(OK).json(dashboardData)
+};
+
 const dashboard = async (req, res) => {
   const { appId, secretKey, parameters} = req.body;
   const conversionReportArray = await getConversionReport(appId, secretKey, parameters);
@@ -32,17 +41,8 @@ const conversion = async (req, res) => {
   const { appId, secretKey, parameters} = req.body;
   const conversionReportArray = await getConversionReport(appId, secretKey, parameters);
   const conversionData = await processConversion(conversionReportArray);
-  res.status(OK).json({});
+  res.status(OK).json({ conversionReport: conversionData });
 }
-
-const initial = async (req, res) => {
-  const { appId, secretKey, parameters } = req.body;
-  const conversionReportArray = await getConversionReport(appId, secretKey, parameters);
-  const dashboardData = await processDashboard(conversionReportArray);
-  const conversionData = await processConversion(conversionReportArray);
-  dashboardData.conversionData = [];
-  res.status(OK).json(dashboardData)
-};
 
 export {
   checkApi,
