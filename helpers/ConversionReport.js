@@ -1,5 +1,6 @@
 import { ShopeeRequestCLient } from "../client/ShopeeRequestClient.js";
 import { identifyErrorMessage } from "../helpers/ShopeeErrorRequest.js";
+
 const getConversionReport = async (appId, secretKey, parameters) => {
     let response;
     let conversionReportArray = [];
@@ -10,7 +11,7 @@ const getConversionReport = async (appId, secretKey, parameters) => {
       }
       response = await ShopeeRequestCLient(appId, secretKey, query);
       if(response?.errors){
-        return response.errors;
+        return response;
       }
       if(response?.data?.conversionReport?.nodes){
         conversionReportArray = [ ...conversionReportArray, ...response.data.conversionReport.nodes];
@@ -24,19 +25,13 @@ const getConversionReportQuery = (parameters) => {
     conversionReport(${parameters}){ 
       nodes{
         totalCommission
-        totalBrandCommission
         shopeeCommissionCapped
-        cappedCommission
         sellerCommission
-        purchaseTime
         utmContent
         orders{
+          orderStatus
           items {
             itemPrice
-            itemTotalCommission
-            displayItemStatus
-            itemShopeeCommissionRate
-            itemSellerCommissionRate
             qty
           }
         }
@@ -50,6 +45,9 @@ const getConversionReportQuery = (parameters) => {
 };
 
 const processDashboard = async (conversionReportArray) => {
+  if(!conversionReportArray.length){
+    return { totals: [] };
+  }
   if(conversionReportArray.errors){
     const errorObject =  identifyErrorMessage(conversionReportArray.errors[0]);
     return errorObject;
@@ -65,6 +63,7 @@ const processDashboard = async (conversionReportArray) => {
     totalPending,
     totalOrder,
   } = conversionReportArray.reduce((totals, conversionNode) => {
+    totals.totalCommission += parseFloat(conversionNode.totalCommission);
     totals.totalShopeeCommission += parseFloat(conversionNode.shopeeCommissionCapped);
     totals.totalSellerCommission += parseFloat(conversionNode.sellerCommission);
   
@@ -72,21 +71,20 @@ const processDashboard = async (conversionReportArray) => {
       for (const order of conversionNode.orders) {
         totals.totalOrder += order.items.length;
         
+        switch (order.orderStatus) {
+          case "UNPAID":
+            totals.totalUnpaid += parseFloat(conversionNode.totalCommission);
+            break;
+          case "COMPLETED":
+            totals.totalCompleted += parseFloat(conversionNode.totalCommission);
+            break;
+          case "PENDING":
+            totals.totalPending += parseFloat(conversionNode.totalCommission);
+            break;
+        }
+
         for (const item of order.items) {
-          totals.totalCommission += parseFloat(item.itemTotalCommission);
           totals.totalAmountOrder += parseFloat(item.itemPrice) * item.qty;
-    
-          switch (item.displayItemStatus) {
-            case "UNPAID":
-              totals.totalUnpaid += parseFloat(item.itemTotalCommission);
-              break;
-            case "COMPLETED":
-              totals.totalCompleted += parseFloat(item.itemTotalCommission);
-              break;
-            case "PENDING":
-              totals.totalPending += parseFloat(item.itemTotalCommission);
-              break;
-          }
         }
       }
     }
@@ -109,42 +107,74 @@ const processDashboard = async (conversionReportArray) => {
       totalCommission: subId.totalCommission.toLocaleString()
     };
   });
-  return { overAllTotal: [
-          { type: 'amount', id: 1, name: "Total Commission", value: parseInt(totalCommission).toLocaleString()},
+  return { totals: [
+          { type: 'amount', id: 1, name: "Total Commission", value: totalCommission.toLocaleString()},
           { type: 'number', id: 2, name: "Total Order", value: totalOrder.toLocaleString()},
-          { type: 'amount', id: 3, name: "Total Amount Order", value: parseInt(totalAmountOrder).toLocaleString()},
-          { type: 'amount', id: 4, name: "Shopee Commission", value: parseInt(totalShopeeCommission).toLocaleString()},
-          { type: 'amount', id: 5, name: "Seller Commission", value: parseInt(totalSellerCommission).toLocaleString()},
-          { type: 'amount', id: 6, name: "Unpaid", value: parseInt(totalUnpaid).toLocaleString()},
-          { type: 'amount', id: 7, name: "Completed", value: parseInt(totalCompleted).toLocaleString()},
-          { type: 'amount', id: 8, name: "Pending", value: parseInt(totalPending).toLocaleString()},
+          { type: 'amount', id: 3, name: "Total Amount Order", value: totalAmountOrder.toLocaleString()},
+          { type: 'amount', id: 4, name: "Shopee Commission", value: totalShopeeCommission.toLocaleString()},
+          { type: 'amount', id: 5, name: "Seller Commission", value: totalSellerCommission.toLocaleString()},
+          { type: 'amount', id: 6, name: "Unpaid", value: totalUnpaid.toLocaleString()},
+          { type: 'amount', id: 7, name: "Completed", value: totalCompleted.toLocaleString()},
+          { type: 'amount', id: 8, name: "Pending", value: totalPending.toLocaleString()},
       ], topFiveSubIds: topFiveSubIds, 
   };
 };
 
 const processConversion = async (conversionReportArray) => {
+  if(conversionReportArray.errors){
+    const errorObject =  identifyErrorMessage(conversionReportArray.errors[0]);
+    return errorObject;
+  }
   const result = [];
-  conversionReportArray.forEach(node => {
-    const utmContent = node.utmContent.replace(/-{2,}/g, '');
-    const path = utmContent.split('-');
-    let currentNode = result;
-  
-    path.forEach(part => {
-      let existingNode = currentNode.find(n => n.name === part);
-      if (!existingNode) {
-        const newNode = {
-          name: part,
-          id:  part,
-          children: []
-        };
-        currentNode.push(newNode);
-        currentNode = newNode.children;
-      } else {
-        currentNode = existingNode.children;
+  let grandTotal = 0;
+  let totalCommission = 0;
+  let blankTotalCommission = 0;
+  for(const outerNode of conversionReportArray){
+    if(outerNode.utmContent === "----"){
+      totalCommission += parseFloat(outerNode.totalCommission);
+    }
+  }
+  for(const outerNode of conversionReportArray){
+    grandTotal += parseFloat(outerNode.totalCommission);
+    const { utmContent } = outerNode;
+    if (utmContent !== "----"){
+      const formattedUtmContent = utmContent.replace(/-{2,}/g, '');
+      const subIds = formattedUtmContent.split('-');
+      let currentNode = result;
+
+      for(let subId of subIds){
+        totalCommission = 0;
+        for(const innerNode of conversionReportArray){
+          if(innerNode.utmContent.includes(subId)){
+            totalCommission += parseFloat(innerNode.totalCommission);
+          }
+        }
+        let existingNode = currentNode.find(n => n.name === subId);
+        if (!existingNode) {
+          const newNode = {
+            name: subId,
+            id:  subId,
+            totalCommission: totalCommission,
+            children: []
+          };
+          currentNode.push(newNode);
+          currentNode = newNode.children;
+        } else {
+          currentNode.totalCommission += totalCommission;
+          currentNode = existingNode.children;
+        }
       }
-    });
-  });
-  return result;
+    }else{
+      blankTotalCommission += parseFloat(outerNode.totalCommission);
+    }
+  }
+  const blank = { 
+    name: "(blank)",
+    id: "(blank)",
+    totalCommission: blankTotalCommission
+  };
+  result.push(blank);
+  return  { conversionReport: { conversionReport: result, grandTotal: grandTotal }};
 };
 
 export { getConversionReport, getConversionReportQuery, processDashboard, processConversion };

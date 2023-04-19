@@ -41,7 +41,7 @@ const conversion = async (req, res) => {
   const { appId, secretKey, parameters} = req.body;
   const conversionReportArray = await getConversionReport(appId, secretKey, parameters);
   const conversionData = await processConversion(conversionReportArray);
-  res.status(OK).json({ conversionReport: conversionData });
+  res.status(OK).json(conversionData);
 }
 
 export {
