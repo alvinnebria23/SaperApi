@@ -66,6 +66,7 @@ const login = async ({ email, password }) => {
     const apiCredentials = await getShopeeApi(user.id);
     existedUser.appId = apiCredentials.appId;
     existedUser.secretKey = apiCredentials.secretKey;
+    delete existedUser.password;
     return { isFound: true, user: existedUser };
   } catch (error) {
     console.error(error);

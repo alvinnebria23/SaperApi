@@ -33,6 +33,7 @@ const getConversionReportQuery = (parameters) => {
           items {
             itemPrice
             qty
+            itemTotalCommission
           }
         }
       }
@@ -66,24 +67,22 @@ const processDashboard = async (conversionReportArray) => {
     totals.totalCommission += parseFloat(conversionNode.totalCommission);
     totals.totalShopeeCommission += parseFloat(conversionNode.shopeeCommissionCapped);
     totals.totalSellerCommission += parseFloat(conversionNode.sellerCommission);
-  
     if(conversionNode.orders){
       for (const order of conversionNode.orders) {
         totals.totalOrder += order.items.length;
-        
-        switch (order.orderStatus) {
-          case "UNPAID":
-            totals.totalUnpaid += parseFloat(conversionNode.totalCommission);
-            break;
-          case "COMPLETED":
-            totals.totalCompleted += parseFloat(conversionNode.totalCommission);
-            break;
-          case "PENDING":
-            totals.totalPending += parseFloat(conversionNode.totalCommission);
-            break;
-        }
 
         for (const item of order.items) {
+          switch (order.orderStatus) {
+            case "UNPAID":
+              totals.totalUnpaid += parseFloat(item.itemTotalCommission);
+              break;
+            case "COMPLETED":
+              totals.totalCompleted += parseFloat(item.itemTotalCommission);
+              break;
+            case "PENDING":
+              totals.totalPending += parseFloat(item.itemTotalCommission);
+              break;
+          }
           totals.totalAmountOrder += parseFloat(item.itemPrice) * item.qty;
         }
       }
@@ -104,18 +103,18 @@ const processDashboard = async (conversionReportArray) => {
   const topFiveSubIds = totalCommissionOfSubIds.slice(0, 5).map(subId => {
     return {
       ...subId,
-      totalCommission: subId.totalCommission.toLocaleString()
+      totalCommission: subId.totalCommission
     };
   });
   return { totals: [
-          { type: 'amount', id: 1, name: "Total Commission", value: totalCommission.toLocaleString()},
-          { type: 'number', id: 2, name: "Total Order", value: totalOrder.toLocaleString()},
-          { type: 'amount', id: 3, name: "Total Amount Order", value: totalAmountOrder.toLocaleString()},
-          { type: 'amount', id: 4, name: "Shopee Commission", value: totalShopeeCommission.toLocaleString()},
-          { type: 'amount', id: 5, name: "Seller Commission", value: totalSellerCommission.toLocaleString()},
-          { type: 'amount', id: 6, name: "Unpaid", value: totalUnpaid.toLocaleString()},
-          { type: 'amount', id: 7, name: "Completed", value: totalCompleted.toLocaleString()},
-          { type: 'amount', id: 8, name: "Pending", value: totalPending.toLocaleString()},
+          { type: 'amount', id: 1, name: "Total Commission", value: totalCommission},
+          { type: 'number', id: 2, name: "Total Order", value: totalOrder},
+          { type: 'amount', id: 3, name: "Total Amount Order", value: totalAmountOrder},
+          { type: 'amount', id: 4, name: "Shopee Commission", value: totalShopeeCommission},
+          { type: 'amount', id: 5, name: "Seller Commission", value: totalSellerCommission},
+          { type: 'amount', id: 6, name: "Unpaid", value: totalUnpaid},
+          { type: 'amount', id: 7, name: "Completed", value: totalCompleted},
+          { type: 'amount', id: 8, name: "Pending", value: totalPending},
       ], topFiveSubIds: topFiveSubIds, 
   };
 };
@@ -142,11 +141,17 @@ const processConversion = async (conversionReportArray) => {
       const subIds = formattedUtmContent.split('-');
       let currentNode = result;
 
+      let outerIndex = 0;
       for(let subId of subIds){
         totalCommission = 0;
         for(const innerNode of conversionReportArray){
           if(innerNode.utmContent.includes(subId)){
-            totalCommission += parseFloat(innerNode.totalCommission);
+            const subIdArray = innerNode.utmContent.split("-");
+            subIdArray.map((subIdItem, innerIndex) => {
+              if(subIdItem === subId && outerIndex === innerIndex){
+                totalCommission += parseFloat(innerNode.totalCommission);
+              }
+            })
           }
         }
         let existingNode = currentNode.find(n => n.name === subId);
@@ -155,6 +160,7 @@ const processConversion = async (conversionReportArray) => {
             name: subId,
             id:  subId,
             totalCommission: totalCommission,
+            level: outerIndex + 1,
             children: []
           };
           currentNode.push(newNode);
@@ -163,6 +169,7 @@ const processConversion = async (conversionReportArray) => {
           currentNode.totalCommission += totalCommission;
           currentNode = existingNode.children;
         }
+        outerIndex++;
       }
     }else{
       blankTotalCommission += parseFloat(outerNode.totalCommission);
@@ -171,6 +178,7 @@ const processConversion = async (conversionReportArray) => {
   const blank = { 
     name: "(blank)",
     id: "(blank)",
+    level: 0, 
     totalCommission: blankTotalCommission
   };
   result.push(blank);
