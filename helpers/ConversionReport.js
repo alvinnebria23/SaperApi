@@ -97,7 +97,7 @@ const processDashboard = async (conversionReportArray) => {
       return sum;
     }, 0);
     
-    return { subId, totalCommission: Math.round(total) };
+    return { subId, totalCommission: total };
   });
   totalCommissionOfSubIds.sort((a, b) => b.totalCommission - a.totalCommission);
   const topFiveSubIds = totalCommissionOfSubIds.slice(0, 5).map(subId => {
