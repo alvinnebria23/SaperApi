@@ -1,10 +1,12 @@
 import { OK } from "../constants/HttpCodes.js"
 import { ShopeeRequestCLient } from "../client/ShopeeRequestClient.js";
-import { getConversionReport, getConversionReportQuery, processDashboard, processConversion } from "../helpers/ConversionReport.js";
+import { getConversionReport, processDashboard, processSubid, processClickTime } from "../helpers/ConversionReport.js";
+import { CLICKTIME_QUERY_VARIABLES, DASHBOARD_QUERY_VARIABLES, SUBID_QUERY_VARIABLES } from "../constants/ShopeeConstants.js";
+import { getConversionReportQuery } from "../util/QueryStringUtil.js";
 const checkApi = async (req, res) => {
   try {
     const { appId, secretKey } = req.body;
-    const query = getConversionReportQuery('limit:1');
+    const query = getConversionReportQuery('limit:1', DASHBOARD_QUERY_VARIABLES);
     const response = await ShopeeRequestCLient(appId, secretKey, query);
     if(response.errors){
       const { code } = response.errors[0].extensions;
@@ -23,30 +25,38 @@ const checkApi = async (req, res) => {
 
 const initial = async (req, res) => {
   const { appId, secretKey, parameters } = req.body;
-  const conversionReportArray = await getConversionReport(appId, secretKey, parameters);
+  const conversionReportArray = await getConversionReport(appId, secretKey, parameters, DASHBOARD_QUERY_VARIABLES);
   const dashboardData = await processDashboard(conversionReportArray);
-  const conversionData = await processConversion(conversionReportArray);
+  const conversionData = await processSubid(conversionReportArray);
   dashboardData.conversionReport = conversionData;
   res.status(OK).json(dashboardData)
 };
 
 const dashboard = async (req, res) => {
   const { appId, secretKey, parameters} = req.body;
-  const conversionReportArray = await getConversionReport(appId, secretKey, parameters);
+  const conversionReportArray = await getConversionReport(appId, secretKey, parameters, DASHBOARD_QUERY_VARIABLES);
   const dashboardData = await processDashboard(conversionReportArray);
   res.status(OK).json(dashboardData);
 };
 
-const conversion = async (req, res) => {
+const subIdTree = async (req, res) => {
   const { appId, secretKey, parameters} = req.body;
-  const conversionReportArray = await getConversionReport(appId, secretKey, parameters);
-  const conversionData = await processConversion(conversionReportArray);
+  const conversionReportArray = await getConversionReport(appId, secretKey, parameters, SUBID_QUERY_VARIABLES);
+  const conversionData = await processSubid(conversionReportArray);
+  res.status(OK).json(conversionData);
+}
+
+const clickTimeTree = async (req, res) => {
+  const { appId, secretKey, parameters} = req.body;
+  const conversionReportArray = await getConversionReport(appId, secretKey, parameters, CLICKTIME_QUERY_VARIABLES);
+  const conversionData = await processClickTime(conversionReportArray);
   res.status(OK).json(conversionData);
 }
 
 export {
   checkApi,
   dashboard,
-  conversion,
-  initial
+  subIdTree,
+  initial,
+  clickTimeTree
 };

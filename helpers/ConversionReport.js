@@ -1,13 +1,14 @@
 import { ShopeeRequestCLient } from "../client/ShopeeRequestClient.js";
 import { identifyErrorMessage } from "../helpers/ShopeeErrorRequest.js";
-
-const getConversionReport = async (appId, secretKey, parameters) => {
+import { MONTHS } from "../constants/DateConstants.js";
+import { getConversionReportQuery } from "../util/QueryStringUtil.js";
+const getConversionReport = async (appId, secretKey, parameters, queryVariables) => {
     let response;
     let conversionReportArray = [];
-    let query = getConversionReportQuery(parameters);
+    let query = getConversionReportQuery(parameters, queryVariables);
     do{
       if(response?.data?.conversionReport?.pageInfo?.scrollId){
-        query = getConversionReportQuery(`${parameters}, scrollId: "${response.data.conversionReport.pageInfo.scrollId}"`)
+        query = getConversionReportQuery(`${parameters}, scrollId: "${response.data.conversionReport.pageInfo.scrollId}"`, queryVariables)
       }
       response = await ShopeeRequestCLient(appId, secretKey, query);
       if(response?.errors){
@@ -20,30 +21,6 @@ const getConversionReport = async (appId, secretKey, parameters) => {
     return conversionReportArray;
 };
 
-const getConversionReportQuery = (parameters) => {
-  return `{
-    conversionReport(${parameters}){ 
-      nodes{
-        totalCommission
-        shopeeCommissionCapped
-        sellerCommission
-        utmContent
-        orders{
-          orderStatus
-          items {
-            itemPrice
-            qty
-            itemTotalCommission
-          }
-        }
-      }
-      pageInfo {
-        hasNextPage
-        scrollId
-      }
-    }
-  }`;
-};
 
 const processDashboard = async (conversionReportArray) => {
   if(!conversionReportArray.length){
@@ -119,7 +96,7 @@ const processDashboard = async (conversionReportArray) => {
   };
 };
 
-const processConversion = async (conversionReportArray) => {
+const processSubid = async (conversionReportArray) => {
   if(conversionReportArray.errors){
     const errorObject =  identifyErrorMessage(conversionReportArray.errors[0]);
     return errorObject;
@@ -185,4 +162,49 @@ const processConversion = async (conversionReportArray) => {
   return  { conversionReport: { conversionReport: result, grandTotal: grandTotal }};
 };
 
-export { getConversionReport, getConversionReportQuery, processDashboard, processConversion };
+const processClickTime = async (conversionReportArray) => {
+  if(conversionReportArray.errors){
+    const errorObject =  identifyErrorMessage(conversionReportArray.errors[0]);
+    return errorObject;
+  }
+  conversionReportArray.sort((a, b) => a.clickTime - b.clickTime);
+
+  const result = [];
+  let grandTotal = 0;
+  for(const conversionNode of conversionReportArray){
+    let totalCommission = 0;
+    grandTotal += parseFloat(conversionNode.totalCommission);
+    let currentNode = result;
+    const clickTimeBySection = [];
+    const date = new Date(conversionNode.clickTime * 1000);
+    const monthName = MONTHS[date.getMonth()];
+    const day = date.getDate();
+    const hours = date.getHours();
+    const amOrPm = hours >= 12 ? 'PM' : 'AM';
+
+    clickTimeBySection.push(monthName);
+    clickTimeBySection.push(`${day}-${monthName}`);
+    clickTimeBySection.push(`${hours % 12 || 12}${amOrPm}`); 
+    clickTimeBySection.push(date.getMinutes().toString());
+
+    let outerIndex = 0;
+    for(const section of clickTimeBySection){
+      const existingNode = currentNode.find(n => n.name === section); 
+      if(!existingNode){
+        const newNode = {
+          name:section,
+          id: section,
+          totalCommission: totalCommission,
+          children: []
+        };
+        currentNode.push(newNode);
+        currentNode = newNode.children;
+      } else {
+        currentNode = existingNode.children;
+      }
+    }
+  }
+  return  { conversionReport: { conversionReport: result, grandTotal: grandTotal }};
+}
+
+export { getConversionReport, processDashboard, processSubid, processClickTime };

@@ -1,5 +1,4 @@
 import UserRouter from "./routes/UserRouter.js"
-import ConvertionReportRouter from "./routes/ConversionReportRouter.js"
 import ShopeeRouter from "./routes/ShopeeRouter.js";
 import ProxyUserRouter from "./routes/ProxyUserRouter.js";
 import express from 'express';
@@ -14,7 +13,6 @@ app.use(express.urlencoded({ extended: true }));
 //routers
 app.use("/api/v1/user", UserRouter);
 app.use("/user", ProxyUserRouter)
-app.use("/api/v1/report", ConvertionReportRouter);
 app.use("/api/v1/shopee", ShopeeRouter);
 
 app.listen(PORT, () => {
