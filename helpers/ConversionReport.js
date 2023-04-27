@@ -172,29 +172,27 @@ const processClickTime = async (conversionReportArray) => {
   const result = [];
   let grandTotal = 0;
   for(const conversionNode of conversionReportArray){
-    let totalCommission = 0;
-    grandTotal += parseFloat(conversionNode.totalCommission);
     let currentNode = result;
-    const clickTimeBySection = [];
     const date = new Date(conversionNode.clickTime * 1000);
     const monthName = MONTHS[date.getMonth()];
     const day = date.getDate();
     const hours = date.getHours();
     const amOrPm = hours >= 12 ? 'PM' : 'AM';
 
-    clickTimeBySection.push(monthName);
-    clickTimeBySection.push(`${day}-${monthName}`);
-    clickTimeBySection.push(`${hours % 12 || 12}${amOrPm}`); 
-    clickTimeBySection.push(date.getMinutes().toString());
+    const clickTimeBySection = [
+      MONTHS[date.getMonth()],
+      `${day}-${monthName}`,
+      `${hours % 12 || 12}${amOrPm}`,
+      date.getMinutes().toString()
+    ];
 
-    let outerIndex = 0;
     for(const section of clickTimeBySection){
       const existingNode = currentNode.find(n => n.name === section); 
       if(!existingNode){
         const newNode = {
           name:section,
           id: section,
-          totalCommission: totalCommission,
+          totalCommission: parseFloat(conversionNode.totalCommission),
           children: []
         };
         currentNode.push(newNode);
@@ -204,7 +202,23 @@ const processClickTime = async (conversionReportArray) => {
       }
     }
   }
+  for (let monthNode of result) {
+    for (let dateNode of monthNode.children) {
+      for (let timeNode of dateNode.children) {
+        timeNode.totalCommission = calculateTotalCommission(timeNode);
+      }
+      dateNode.totalCommission = calculateTotalCommission(dateNode);
+    }
+    monthNode.totalCommission = calculateTotalCommission(monthNode);
+    grandTotal += monthNode.totalCommission;
+  }
   return  { conversionReport: { conversionReport: result, grandTotal: grandTotal }};
 }
-
+const calculateTotalCommission = (node) => {
+  let totalCommission = 0;
+  for (let child of node.children) {
+    totalCommission += child.totalCommission;
+  }
+  return totalCommission;
+}
 export { getConversionReport, processDashboard, processSubid, processClickTime };
