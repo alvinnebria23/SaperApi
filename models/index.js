@@ -2,6 +2,7 @@ import { DB, USER, PASSWORD, HOST, DIALECT as _dialect, POOL as _pool, PORT as _
 import { Sequelize, DataTypes } from "sequelize";
 import { User } from "./UserModel.js";
 import { ShopeeApi } from "./ShopeeApiModel.js";
+import { Link } from "./LinkModel.js";
 import { USER_TABLE_VALUES } from "../constants/DbConstants.js";
 const sequelize = new Sequelize(DB, USER, PASSWORD, {
   host: HOST,
@@ -30,7 +31,7 @@ db.sequelize = sequelize;
 
 db.users = User(sequelize, DataTypes);
 db.shopeeApis = ShopeeApi(sequelize, DataTypes);
-
+db.links = Link(sequelize, DataTypes);
 //Relations
 db.users.hasOne(db.shopeeApis, {
   sourceKey: "id",
@@ -41,7 +42,8 @@ db.users.hasOne(db.shopeeApis, {
   onUpdate: "CASCADE",
   onDelete: "CASCADE",
 });
-db.shopeeApis.belongsTo(db.users, {
+
+db.users.hasMany(db.links, {
   sourceKey: "id",
   foreignKey: {
     name: "userId",
@@ -51,6 +53,15 @@ db.shopeeApis.belongsTo(db.users, {
   onDelete: "CASCADE",
 });
 
+db.shopeeApis.belongsTo(db.users, {
+  sourceKey: "id",
+  foreignKey: {
+    name: "userId",
+    allowNull: false,
+  },
+  onUpdate: "CASCADE",
+  onDelete: "CASCADE",
+});
 (async () => {
   await sequelize.sync();
   await db.users.bulkCreate(USER_TABLE_VALUES, {

@@ -9,3 +9,14 @@ export const getConversionReportQuery = (parameters, queryVariables) => {
     }
   }`;
 };
+
+export const getGenerateShortLinkQuery = (originalUrl, subIds) => {
+  return `mutation{
+    generateShortLink(input:{
+      originUrl: "${originalUrl}",
+      subIds:${JSON.stringify(subIds)}
+    }){
+      shortLink
+    }
+  }`;
+}
