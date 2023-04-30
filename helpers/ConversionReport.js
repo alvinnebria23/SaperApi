@@ -1,6 +1,5 @@
 import { ShopeeRequestCLient } from "../client/ShopeeRequestClient.js";
 import { identifyErrorMessage } from "../helpers/ShopeeErrorRequest.js";
-import { MONTHS } from "../constants/DateConstants.js";
 import { getConversionReportQuery } from "../util/QueryStringUtil.js";
 const getConversionReport = async (appId, secretKey, parameters, queryVariables) => {
     let response;
@@ -47,17 +46,17 @@ const processDashboard = async (conversionReportArray) => {
     if(conversionNode.orders){
       for (const order of conversionNode.orders) {
         totals.totalOrder += order.items.length;
-
         for (const item of order.items) {
+          item.itemTotalCommission = parseFloat(item.itemTotalCommission)
           switch (order.orderStatus) {
             case "UNPAID":
-              totals.totalUnpaid += parseFloat(item.itemTotalCommission);
+              totals.totalUnpaid += item.itemTotalCommission;
               break;
             case "COMPLETED":
-              totals.totalCompleted += parseFloat(item.itemTotalCommission);
+              totals.totalCompleted += item.itemTotalCommission;
               break;
             case "PENDING":
-              totals.totalPending += parseFloat(item.itemTotalCommission);
+              totals.totalPending += item.itemTotalCommission;
               break;
           }
           totals.totalAmountOrder += parseFloat(item.itemPrice) * item.qty;
@@ -163,6 +162,7 @@ const processSubid = async (conversionReportArray) => {
 };
 
 const processClickTime = async (conversionReportArray) => {
+  const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   if(conversionReportArray.errors){
     const errorObject =  identifyErrorMessage(conversionReportArray.errors[0]);
     return errorObject;
@@ -173,6 +173,7 @@ const processClickTime = async (conversionReportArray) => {
   let grandTotal = 0;
   for(const conversionNode of conversionReportArray){
     let currentNode = result;
+    conversionNode.totalCommission = parseFloat(conversionNode.totalCommission);
     const date = new Date(conversionNode.clickTime * 1000);
     const monthName = MONTHS[date.getMonth()];
     const day = date.getDate();
@@ -183,21 +184,24 @@ const processClickTime = async (conversionReportArray) => {
       MONTHS[date.getMonth()],
       `${day}-${monthName}`,
       `${hours % 12 || 12}${amOrPm}`,
-      date.getMinutes().toString()
+      date.getMinutes().toString(),
     ];
 
-    for(const section of clickTimeBySection){
+    for(const [index, section] of clickTimeBySection.entries()){
       const existingNode = currentNode.find(n => n.name === section); 
       if(!existingNode){
         const newNode = {
           name:section,
           id: section,
-          totalCommission: parseFloat(conversionNode.totalCommission),
+          totalCommission: conversionNode.totalCommission,
           children: []
         };
         currentNode.push(newNode);
         currentNode = newNode.children;
       } else {
+        if(index === 3){
+          existingNode.totalCommission += conversionNode.totalCommission;
+        }
         currentNode = existingNode.children;
       }
     }

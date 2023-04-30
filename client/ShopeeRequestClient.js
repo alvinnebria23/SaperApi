@@ -7,9 +7,14 @@ const ShopeeRequestCLient = async (appId, secretKey, query) => {
     const payload =  {
       "query": query
     };
-    const signature = getSignature(appId + timestamp + JSON.stringify(payload) + secretKey);
-    const authorizationHeader = getAuthorizationHeader(appId, timestamp, signature);
-    const config = getConfig(authorizationHeader);
+    const signature = crypto.createHash('sha256').update(appId + timestamp + JSON.stringify(payload) + secretKey).digest('hex');
+    const authorizationHeader =  `SHA256 Credential=${appId}, Timestamp=${timestamp}, Signature=${signature}`;
+    const config = {
+      headers: {
+        'Authorization': authorizationHeader,
+        'Content-Type': 'application/json'
+      },
+    }
     const response = await axios.post(SHOPEE_API_ENDPOINT, payload, config);
     const { data } = response;
     return data;
@@ -18,21 +23,6 @@ const ShopeeRequestCLient = async (appId, secretKey, query) => {
     return error;
   }
 };
-
-const getSignature = (value) => {
-    return crypto.createHash('sha256').update(value).digest('hex');
-}
-const getAuthorizationHeader = (appId, timestamp, signature) => {
-    return `SHA256 Credential=${appId}, Timestamp=${timestamp}, Signature=${signature}`;
-};
-const getConfig = (authorizationHeader) => {
-    return {
-        headers: {
-          'Authorization': authorizationHeader,
-          'Content-Type': 'application/json'
-        },
-    }
-}
 export {
     ShopeeRequestCLient,
 };
