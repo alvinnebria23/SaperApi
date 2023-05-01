@@ -1,0 +1,36 @@
+import { Op } from "sequelize";
+import db from "../models/index.js";
+const Link = db.links;
+
+/**
+ * Creates a new Shopee API for the given user with the provided app ID, secret key, and user ID.
+ * @param {string} appId - The app ID for the Shopee API.
+ * @param {string} secret - The secret key for the Shopee API.
+ * @param {number} userId - The ID of the user associated with the Shopee API.
+ * @returns {Promise} - A promise that resolves to the created Shopee API.
+ * @throws {Error} - If there is an error creating the Shopee API.
+ */
+const saveLink = async (link, shortLink, subIds, userId) => {
+  try {
+    const [savedLink, created] = await Link.findOrCreate({
+      where: {
+        [Op.and]:[{ originalUrl: link }, { shortLink: shortLink }]
+      },
+      defaults: {
+        originalUrl: link,
+        shortLink: shortLink,
+        name: shortLink,
+        subIds: JSON.stringify(subIds),
+        userId: userId,
+      },
+    });
+    if(!created){
+      return null;
+    }
+    return savedLink;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export { saveLink };

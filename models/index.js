@@ -15,7 +15,7 @@ const sequelize = new Sequelize(DB, USER, PASSWORD, {
     idle: _pool.idle,
   },
   port: _port,
-  logging: true,
+  logging: false,
 });
 
 sequelize

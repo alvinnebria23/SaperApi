@@ -54,5 +54,13 @@ const getShopeeApi = async (userId) => {
   }
 };
 
+const getShopeeApiByAppId = async (appId) => {
+  try {
+    const apiCredentials =  await ShopeeApi.findOne({ where: { appId: appId }});
+    return apiCredentials.get({ plain: true });
+  } catch (error) {
+    throw error;
+  }
+}
 
-export { registerShopeeApi, updateShopeeApi, getShopeeApi };
+export { registerShopeeApi, updateShopeeApi, getShopeeApi, getShopeeApiByAppId };
