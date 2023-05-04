@@ -33,4 +33,14 @@ const saveLink = async (link, shortLink, subIds, userId) => {
   }
 };
 
-export { saveLink };
+const getLinks = async (userId) => {
+  try {
+    const links = await Link.findAll({ where: { userId } });
+    return links.map(link => link.get({ plain: true }));
+  } catch (error) {
+    throw error;
+  }
+};
+
+
+export { saveLink, getLinks };
