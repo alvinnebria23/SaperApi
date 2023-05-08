@@ -42,5 +42,23 @@ const getLinks = async (userId) => {
   }
 };
 
+const update = async (data, where) => {
+  try {
+    const link = await Link.update(data, where);
+    return link;
+  } catch (error) {
+    throw error;
+  }
+}
 
-export { saveLink, getLinks };
+const remove = async (where) => {
+  try {
+    const response = await Link.destroy(where);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+}
+
+
+export { saveLink, getLinks, update, remove };

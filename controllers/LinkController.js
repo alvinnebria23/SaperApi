@@ -1,6 +1,6 @@
 import { ShopeeRequestCLient } from "../client/ShopeeRequestClient.js";
 import { OK } from "../constants/HttpCodes.js";
-import { saveLink, getLinks } from "../service/LinkService.js";
+import { saveLink, getLinks, update, remove } from "../service/LinkService.js";
 import { getShopeeApiByAppId } from "../service/ShopeeApiService.js";
 import { getGenerateShortLinkQuery } from "../util/QueryStringUtil.js";
 
@@ -45,4 +45,25 @@ const retrieveGeneratedLinks = async (req, res) => {
   }
 };
 
-export { generateAndSaveLink, retrieveGeneratedLinks };
+const updateLink = async(req, res) => {
+  try {
+    const { data, where } = req.body
+    const updatedLink = await update(data, where);
+    res.status(OK).json(updatedLink)
+  } catch (error) {
+    throw error;
+  }
+}
+
+const removeLinks = async(req, res) => {
+  try {
+    const { where } = req.body
+    const response = await remove(where);
+    res.status(OK).json(response)
+  } catch (error) {
+    throw error;
+  }
+}
+
+
+export { generateAndSaveLink, retrieveGeneratedLinks, updateLink, removeLinks };
