@@ -39,7 +39,7 @@ const verifyEmail = async (req, res) => {
         await sendVerificationMail(id, email, token);
       }
     }else{
-      await updateUser({ isValidEmail: true}, { id: id })
+      await updateUser({ isValidEmail: true}, { id: id }, false);
     }
     const htmlResponse = response ? getHtmlResponse(true) : getHtmlResponse(false, response.errorName);
     res.set('Content-Type', 'text/html').send(Buffer.from(htmlResponse));
@@ -84,27 +84,12 @@ const changePassword = async (req, res) => {
   }
 };
 
-/**
- * Updates the Shopee API information for the user with the provided user ID.
- * @param {Object} req - The request object from the HTTP request.
- * @param {Object} res - The response object from the HTTP request.
- * @throws {Error} - If there is an error updating the Shopee API information.
- */
-const changeApi = async (req, res) => {
-  try {
-    const { userId, appId, secretKey } = req.body;
-    await updateShopeeApi(userId, appId, secretKey);
-    res.status(OK).json({});
-  } catch (error) {
-    console.error(error);
-    res.status(ERROR).json(error);
-  }
-};
 
 const changeUserInformation = async (req, res) => {
   try {
-    await updateUser(req.body);
-    res.status(OK).json({});
+    const { data, where } = req.body;
+    const response = await updateUser(data, where, true);
+    res.status(OK).json(response);
   } catch (error) {
     console.error(error);
     res.status(ERROR).json(error);
@@ -123,7 +108,6 @@ const deleteUser = async (req, res) => {
     await remove(id);
     res.status(OK).json({});
   } catch (error) {
-    console.error(error);
     res.status(ERROR).json(error);
   }
 };
@@ -134,7 +118,7 @@ const checkEmail = async (req, res) => {
     const response = await findEmail(email);
     res.status(OK).json(response);
   } catch (error) {
-    
+    throw error;
   }
 }
 
@@ -172,7 +156,7 @@ const getHtmlResponse = (isVerified, errorName = null) => {
       <body>
         <div class="centered-div">
           <h1>${isVerified ? `You have successfully completed the registration!` : errorName === 'invalid' ? `INVALID TOKEN` : `Your verification link has expired.`}</h1>
-          <p>${isVerified ? `You can now login your account to the sapers mobile application.` : `We have sent another verification link to your email address. Please verify your email address within 7 days.`}</p>
+          <p>${isVerified ? `You can now log in to your account on the SAPERS mobile application.` : `We have sent another verification link to your email address. Please verify your email address within 7 days.`}</p>
           <br>
           <p>Thank you for downloading our app.</p>
           <br>
@@ -188,7 +172,6 @@ export {
   verifyEmail,
   login,
   changePassword,
-  changeApi,
   changeUserInformation,
   deleteUser,
   loginUser,

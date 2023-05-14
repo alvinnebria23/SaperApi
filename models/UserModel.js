@@ -33,6 +33,12 @@ const User = (sequelize, DataTypes) => {
       beforeCreate: (user) => {
         const salt = genSaltSync(2);
         user.password = hashSync(user.password, salt);
+      },
+      beforeUpdate: async (user) => {
+        if(user.changed('password')){
+          const salt = genSaltSync(2);
+          user.password = hashSync(user.password, salt);
+        }
       }
     }
   });

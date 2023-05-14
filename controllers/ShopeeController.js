@@ -1,11 +1,20 @@
 import { OK } from "../constants/HttpCodes.js"
 import { ShopeeRequestCLient } from "../client/ShopeeRequestClient.js";
+import { getShopeeApi, getShopeeApiByAppId, updateShopeeApi }  from "../service/ShopeeApiService.js"
 import { getConversionReport, processDashboard, processSubid, processClickTime } from "../helpers/ConversionReport.js";
 import { CLICKTIME_QUERY_VARIABLES, DASHBOARD_QUERY_VARIABLES, SUBID_QUERY_VARIABLES } from "../constants/ShopeeConstants.js";
 import { getConversionReportQuery } from "../util/QueryStringUtil.js";
+import { findUserById } from "../service/UserService.js";
 const checkApi = async (req, res) => {
   try {
-    const { appId, secretKey } = req.body;
+    const { appId, secretKey, isUpdate, id } = req.body;
+    const apiCredentials = await getShopeeApiByAppId(appId);
+    if(!isUpdate){
+      if(apiCredentials.secretKey === secretKey){
+        res.status(OK).json({ success: false, message: 'The App ID and Secret key have already been registered by another user.'});
+        return;
+      }
+    }
     const query = getConversionReportQuery('limit:1', DASHBOARD_QUERY_VARIABLES);
     const response = await ShopeeRequestCLient(appId, secretKey, query);
     if(response.errors){
@@ -17,7 +26,18 @@ const checkApi = async (req, res) => {
       }
       return;
     }
+    if(isUpdate){
+      await updateShopeeApi(id, appId, secretKey);
+      const user = await findUserById(id);
+      const apiCredentials = await getShopeeApi(id);
+      user.appId = apiCredentials.appId;
+      user.secretKey = apiCredentials.secretKey;
+      user.success = true;
+      res.status(OK).json(user);
+      return;
+    }
     res.status(OK).json({ success: true, message: 'success'});
+    return;
   } catch (error) {
     res.status(OK).json({ success: false, message: 'There was an error. Please try again later.'})
   }
@@ -58,5 +78,5 @@ export {
   dashboard,
   subIdTree,
   initial,
-  clickTimeTree
+  clickTimeTree,
 };

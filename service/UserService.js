@@ -66,7 +66,7 @@ const login = async ({ email, password }) => {
     const apiCredentials = await getShopeeApi(user.id);
     existedUser.appId = apiCredentials.appId;
     existedUser.secretKey = apiCredentials.secretKey;
-    delete existedUser.password;
+    existedUser.password = password;
     return { isFound: true, user: existedUser };
   } catch (error) {
     console.error(error);
@@ -124,16 +124,34 @@ const findEmail = async (email) => {
   }
 };
 
+const findUserById = async (id) => {
+  try {
+    const user = await User.findOne({
+      where: { id }
+    });
+    return user.get({ plain: true });
+  } catch (error) {
+    throw error;
+  }
+};
+
 /**
  * Finds a user with the provided email address in the database and checks if their email address is valid.
- * @param {string} email - The email address to search for.
  * @returns {object} - An object with a single property, isTaken, indicating whether the email address is already associated with a valid user account.
  * @throws {Error} - If there is an error searching the database for the email address.
  */
-const updateUser = async (data, where) => {
+const updateUser = async (data, where, isReturn ) => {
   try {
-    const user = await User.update(data,{ where : where });
-    return user;
+    await User.update(data,{ where : where, individualHooks: true });
+    if(isReturn){
+      const userInstance = await User.findOne({ where: { id: where.id }});
+      const user = userInstance.get({ plain: true });
+      const apiCredentials = await getShopeeApi(where.id);
+      user.appId = apiCredentials.appId;
+      user.secretKey = apiCredentials.secretKey;
+      return user;
+    }
+    return;
   } catch (error) {
     throw error;
   }
@@ -147,4 +165,5 @@ export {
   remove,
   login,
   findEmail,
+  findUserById,
 };

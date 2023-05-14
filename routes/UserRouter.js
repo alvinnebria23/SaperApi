@@ -3,7 +3,6 @@ import {
     registerUser,
     loginUser,
     changePassword,
-    changeApi,
     changeUserInformation,
     deleteUser,
     checkEmail,
@@ -16,8 +15,6 @@ router.post("/registerUser", registerUser);
 router.post("/loginUser", loginUser);
 
 router.post("/changePassword", changePassword);
-
-router.post("/changeApi", changeApi);
 
 router.post("/changeUserInformation", changeUserInformation);
 
