@@ -6,4 +6,5 @@ router.post("/generateAndSaveLink", generateAndSaveLink);
 router.post("/retrieveGeneratedLinks", retrieveGeneratedLinks);
 router.post("/updateLink", updateLink);
 router.post("/removeLinks", removeLinks);
+
 export default router;

@@ -62,9 +62,11 @@ db.shopeeApis.belongsTo(db.users, {
   onUpdate: "CASCADE",
   onDelete: "CASCADE",
 });
+
 (async () => {
   await sequelize.sync();
-  await db.users.bulkCreate(USER_TABLE_VALUES, {
+  console.log('Database synchronized');
+  await db.users.create(USER_TABLE_VALUES, {
     updateOnDuplicate: ['id'],
   });
 })();

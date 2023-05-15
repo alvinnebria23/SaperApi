@@ -95,23 +95,6 @@ const changeUserInformation = async (req, res) => {
     res.status(ERROR).json(error);
   }
 };
-
-/**
- * Deletes the user with the ID provided in the request body from the database.
- * @param {Object} req - The request object from the HTTP request.
- * @param {Object} res - The response object from the HTTP request.
- * @throws {Error} - If there is an error deleting the user.
- */
-const deleteUser = async (req, res) => {
-  try {
-    const { id } = req.body;
-    await remove(id);
-    res.status(OK).json({});
-  } catch (error) {
-    res.status(ERROR).json(error);
-  }
-};
-
 const checkEmail = async (req, res) => {
   try {
     const { email } = req.body;
@@ -173,7 +156,6 @@ export {
   login,
   changePassword,
   changeUserInformation,
-  deleteUser,
   loginUser,
   checkEmail,
 };

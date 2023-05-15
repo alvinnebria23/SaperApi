@@ -2,6 +2,7 @@ import UserRouter from "./routes/UserRouter.js"
 import ShopeeRouter from "./routes/ShopeeRouter.js";
 import ProxyUserRouter from "./routes/ProxyUserRouter.js";
 import LinkRouter from "./routes/LinkRouter.js";
+import CheckToken from "./helpers/CheckToken.js";
 import express from 'express';
 const app = express();
 const PORT = process.env.PORT || 8081;
