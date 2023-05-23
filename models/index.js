@@ -67,7 +67,7 @@ db.shopeeApis.belongsTo(db.users, {
   await sequelize.sync();
   console.log('Database synchronized');
   await db.users.create(USER_TABLE_VALUES, {
-    updateOnDuplicate: ['id'],
+    updateOnDuplicate: ['email'],
   });
 })();
 
