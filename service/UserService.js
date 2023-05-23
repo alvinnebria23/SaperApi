@@ -67,6 +67,7 @@ const login = async ({ email, password }) => {
     existedUser.appId = apiCredentials.appId;
     existedUser.secretKey = apiCredentials.secretKey;
     existedUser.password = password;
+    existedUser.type = existedUser.email === "sapersapk@gmail.com" ? "admin" : "user";
     return { isFound: true, user: existedUser };
   } catch (error) {
     console.error(error);
