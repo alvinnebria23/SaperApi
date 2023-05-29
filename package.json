@@ -5,7 +5,8 @@
   "description": "Saper API",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "pm2 start server.js",
+    "stop": "pm2 stop 0"
   },
   "author": "Alvin Nebria",
   "license": "ISC",
