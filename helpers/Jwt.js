@@ -28,7 +28,7 @@ const verifyToken = async (token) => {
  * @returns {string} - The generated JWT token.
  */
 const generateToken = (payload, expiresIn = '9999 years' ) => {
-    return jwt.sign(payload, API_SECRET, { expiresIn: expiresIn });
+    return jwt.sign(payload, API_KEY + API_SECRET, { expiresIn: expiresIn });
 };
 
 export { verifyToken, generateToken };

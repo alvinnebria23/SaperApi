@@ -3,6 +3,7 @@ import { registerShopeeApi, getShopeeApi } from "./ShopeeApiService.js";
 import { sendVerificationMail } from "../helpers/NodeMailer.js";
 import { Op } from "sequelize";
 import { generateToken } from "../helpers/Jwt.js";
+import logger from "../loggers/logger.js";
 const User = db.users;
 
 /**
@@ -38,6 +39,7 @@ const register = async (user) => {
     await sendVerificationMail(createdUser.id, createdUser.email, token);
     return createdUser;
   } catch (error) {
+    logger.error("ERROR MESSAGE: " + error?.message);
     throw error;
   }
 };
@@ -68,9 +70,10 @@ const login = async ({ email, password }) => {
     existedUser.secretKey = apiCredentials.secretKey;
     existedUser.password = password;
     existedUser.type = existedUser.email === "sapersapk@gmail.com" ? "admin" : "user";
+    existedUser.token = apiCredentials.token;
     return { isFound: true, user: existedUser };
   } catch (error) {
-    console.error(error);
+    logger.error("ERROR MESSAGE: " + error?.message);
     return { isFound: false, message: 'There was an error. Please try again later.'};
   }
 }
@@ -86,6 +89,7 @@ const resendVerification = async (userId, userMail) => {
   try {
     await updateVerification(userId, userMail);
   } catch (error) {
+    logger.error("ERROR MESSAGE: " + error?.message);
     throw error;
   }
 };
@@ -99,6 +103,7 @@ const remove = async (id) => {
   try {
     await User.destroy({ where: { id: id } });
   } catch (error) {
+    logger.error("ERROR MESSAGE: " + error?.message);
     throw error;
   }
 };
@@ -121,6 +126,7 @@ const findEmail = async (email) => {
     }
     return { isTaken: false };
   } catch (error) {
+    logger.error("ERROR MESSAGE: " + error?.message);
     throw error;
   }
 };
@@ -132,6 +138,7 @@ const findUserById = async (id) => {
     });
     return user.get({ plain: true });
   } catch (error) {
+    logger.error("ERROR MESSAGE: " + error?.message);
     throw error;
   }
 };
@@ -154,6 +161,7 @@ const updateUser = async (data, where, isReturn ) => {
     }
     return;
   } catch (error) {
+    logger.error("ERROR MESSAGE: " + error?.message);
     throw error;
   }
 };

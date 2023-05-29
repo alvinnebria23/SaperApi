@@ -7,7 +7,6 @@ const checkToken = (req, res, next) => {
 
   jwt.verify(token, process.env.API_KEY + process.env.API_SECRET, (err, user) => {
     if (err) return res.sendStatus(403);
-    req.user = user;
     next();
   });
 };

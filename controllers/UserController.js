@@ -3,6 +3,7 @@ import { updateShopeeApi }  from "../service/ShopeeApiService.js"
 import { register, updateUser, remove, login, findEmail } from "../service/UserService.js";
 import { generateToken, verifyToken } from "../helpers/Jwt.js";
 import { sendVerificationMail } from "../helpers/NodeMailer.js";
+import logger from "../loggers/logger.js";
 
 /**
  * Registers a new user with the details provided in the request body.
@@ -17,8 +18,8 @@ const registerUser = async (req, res) => {
     const createdUser = await register(user);
     res.status(OK).json(createdUser);
   } catch (error) {
-    console.error(error);
-    res.status(ERROR).json(error);
+    logger.error("ERROR MESSAGE: " + error?.message);
+    res.status(ERROR).json({ success: false });
   }
 };
 
@@ -44,8 +45,8 @@ const verifyEmail = async (req, res) => {
     const htmlResponse = response ? getHtmlResponse(true) : getHtmlResponse(false, response.errorName);
     res.set('Content-Type', 'text/html').send(Buffer.from(htmlResponse));
   } catch (error) {
-    console.error(error);
-    res.status(ERROR).json(error);
+    logger.error("ERROR MESSAGE: " + error?.message);
+    res.status(ERROR).json({ success: false });
   }
 };
 
@@ -60,8 +61,8 @@ const loginUser = async (req, res) => {
     const response = await login(user);
     res.status(OK).json(response);
   } catch (error) {
-    console.error(error);
-    res.status(ERROR).json(error);
+    logger.error("ERROR MESSAGE: " + error?.message);
+    res.status(ERROR).json({ success: false });
   }
 };
 
@@ -79,8 +80,8 @@ const changePassword = async (req, res) => {
     
     res.status(OK).json({});
   } catch (error) {
-    console.error(error);
-    res.status(ERROR).json(error);
+    logger.error("ERROR MESSAGE: " + error?.message);
+    res.status(ERROR).json({ success: false });
   }
 };
 
@@ -101,7 +102,8 @@ const checkEmail = async (req, res) => {
     const response = await findEmail(email);
     res.status(OK).json(response);
   } catch (error) {
-    throw error;
+    logger.error("ERROR MESSAGE: " + error?.message);
+    res.status(ERROR).json({ success: false });
   }
 }
 

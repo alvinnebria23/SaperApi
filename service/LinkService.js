@@ -1,5 +1,6 @@
 import { Op } from "sequelize";
 import db from "../models/index.js";
+import logger from "../loggers/logger.js";
 const Link = db.links;
 
 /**
@@ -29,6 +30,7 @@ const saveLink = async (link, shortLink, subIds, userId) => {
     }
     return savedLink;
   } catch (error) {
+    logger.error("ERROR MESSAGE: " + error?.message);
     throw error;
   }
 };
@@ -38,6 +40,7 @@ const getLinks = async (userId) => {
     const links = await Link.findAll({ where: { userId } });
     return links.map(link => link.get({ plain: true }));
   } catch (error) {
+    logger.error("ERROR MESSAGE: " + error?.message);
     throw error;
   }
 };
@@ -47,6 +50,7 @@ const update = async (data, where) => {
     const link = await Link.update(data, where);
     return link;
   } catch (error) {
+    logger.error("ERROR MESSAGE: " + error?.message);
     throw error;
   }
 }
@@ -56,6 +60,7 @@ const remove = async (where) => {
     const response = await Link.destroy(where);
     return response;
   } catch (error) {
+    logger.error("ERROR MESSAGE: " + error?.message);
     throw error;
   }
 }

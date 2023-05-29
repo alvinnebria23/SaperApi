@@ -1,4 +1,7 @@
+import { Op } from "sequelize";
 import db from "../models/index.js";
+import { generateToken } from "../helpers/Jwt.js";
+import logger from "../loggers/logger.js";
 const ShopeeApi = db.shopeeApis;
 
 /**
@@ -17,6 +20,7 @@ const registerShopeeApi = async (appId, secret, userId) => {
       userId: userId,
     });
   } catch (error) {
+    logger.error("ERROR MESSAGE: " + error?.message);
     throw error;
   }
 };
@@ -35,6 +39,7 @@ const updateShopeeApi = async (userId, appId, secretKey) => {
       { where: { userId: userId } }
     );
   } catch (error) {
+    logger.error("ERROR MESSAGE: " + error?.message);
     throw error;
   }
 };
@@ -50,6 +55,7 @@ const getShopeeApi = async (userId) => {
     const apiCredentials =  await ShopeeApi.findOne({ where: { userId: userId }});
     return apiCredentials.get({ plain: true });
   } catch (error) {
+    logger.error("ERROR MESSAGE: " + error?.message);
     throw error;
   }
 };
@@ -59,8 +65,24 @@ const getShopeeApiByAppId = async (appId) => {
     const apiCredentials =  await ShopeeApi.findOne({ where: { appId: appId }});
     return apiCredentials.get({ plain: true });
   } catch (error) {
+    logger.error("ERROR MESSAGE: " + error?.message);
     throw error;
   }
 }
 
-export { registerShopeeApi, updateShopeeApi, getShopeeApi, getShopeeApiByAppId };
+const updateToken = async (userId, appId, secretKey) => {
+  try {
+    const token = generateToken({appId, secretKey, userId}, '30d')
+    await ShopeeApi.update({ token }, {
+      where: {
+        [Op.and]:[{ userId }, { appId }, { secretKey}]
+      }
+    })
+    return true;
+  } catch (error) {
+    logger.error("ERROR MESSAGE: " + error?.message);
+    throw error;
+  }
+}
+
+export { registerShopeeApi, updateShopeeApi, getShopeeApi, getShopeeApiByAppId, updateToken };

@@ -1,5 +1,6 @@
 import { ShopeeRequestCLient } from "../client/ShopeeRequestClient.js";
-import { OK } from "../constants/HttpCodes.js";
+import { ERROR, OK } from "../constants/HttpCodes.js";
+import logger from "../loggers/logger.js";
 import { saveLink, getLinks, update, remove } from "../service/LinkService.js";
 import { getShopeeApiByAppId } from "../service/ShopeeApiService.js";
 import { getGenerateShortLinkQuery } from "../util/QueryStringUtil.js";
@@ -14,6 +15,7 @@ const generateAndSaveLink = async (req, res) => {
       const response = await ShopeeRequestCLient(appId, secretKey, query)
       .then((response) => {
         if(response.errors){
+          logger.error("ERROR MESSAGE: " + JSON.stringify(response.errors));
           return { error: true, message: response.errors[0].message };
         }
         return response?.data?.generateShortLink?.shortLink;
@@ -31,7 +33,8 @@ const generateAndSaveLink = async (req, res) => {
     }
     res.status(OK).json({ shopeeLinks: generatedLinks })
   } catch (error) {
-    throw error;
+    logger.error("ERROR MESSAGE: " + error?.message);
+    res.status(ERROR).json({ success: false });
   }
 };
 
@@ -41,7 +44,8 @@ const retrieveGeneratedLinks = async (req, res) => {
     const generatedLinks = await getLinks(userId);
     res.status(OK).json({ shopeeLinks: generatedLinks })
   }catch(error){
-    throw error;
+    logger.error("ERROR MESSAGE: " + error?.message);
+    res.status(ERROR).json({ success: false });
   }
 };
 
@@ -51,7 +55,8 @@ const updateLink = async(req, res) => {
     const updatedLink = await update(data, where);
     res.status(OK).json(updatedLink)
   } catch (error) {
-    throw error;
+    logger.error("ERROR MESSAGE: " + error?.message);
+    res.status(ERROR).json({ success: false });
   }
 }
 
@@ -61,7 +66,8 @@ const removeLinks = async(req, res) => {
     const response = await remove(where);
     res.status(OK).json(response)
   } catch (error) {
-    throw error;
+    logger.error("ERROR MESSAGE: " + error?.message);
+    res.status(ERROR).json({ success: false });
   }
 }
 

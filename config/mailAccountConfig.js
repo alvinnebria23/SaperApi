@@ -1,5 +1,5 @@
 const SERVICE = "gmail";
-const USER = "sapersph@gmail.com";
-const PASSWORD = "hzaqbxturpgcdnuf";
+const USER = "sapersapk@gmail.com";
+const PASSWORD = "Joseph3002!";
 
 export { SERVICE, USER, PASSWORD };
