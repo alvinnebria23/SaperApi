@@ -3,7 +3,7 @@ import { Sequelize, DataTypes } from "sequelize";
 import { User } from "./UserModel.js";
 import { ShopeeApi } from "./ShopeeApiModel.js";
 import { Link } from "./LinkModel.js";
-import { USER_TABLE_VALUES } from "../constants/DbConstants.js";
+import { SHOPEE_API_VALUES, USER_TABLE_VALUES } from "../constants/DbConstants.js";
 const sequelize = new Sequelize(DB, USER, PASSWORD, {
   host: HOST,
   dialect: _dialect,
@@ -68,6 +68,9 @@ db.shopeeApis.belongsTo(db.users, {
   console.log('Database synchronized');
   await db.users.create(USER_TABLE_VALUES, {
     updateOnDuplicate: ['email'],
+  });
+  await db.shopeeApis.create(SHOPEE_API_VALUES, {
+    updateOnDuplicate: ['id']
   });
 })();
 

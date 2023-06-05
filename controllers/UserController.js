@@ -1,6 +1,5 @@
 import { OK, ERROR } from "../constants/HttpCodes.js"
-import { updateShopeeApi }  from "../service/ShopeeApiService.js"
-import { register, updateUser, remove, login, findEmail } from "../service/UserService.js";
+import { register, updateUser, login, findEmail, findAllUsers } from "../service/UserService.js";
 import { generateToken, verifyToken } from "../helpers/Jwt.js";
 import { sendVerificationMail } from "../helpers/NodeMailer.js";
 import logger from "../loggers/logger.js";
@@ -66,26 +65,6 @@ const loginUser = async (req, res) => {
   }
 };
 
-
-/**
- * Changes the password of the user with the provided ID to the new password.
- * @param {Object} req - The request object from the HTTP request.
- * @param {Object} res - The response object from the HTTP request.
- * @returns {Promise} - A promise that resolves once the password has been successfully changed.
- * @throws {Error} - If there is an error changing the password.
- */
-const changePassword = async (req, res) => {
-  try {
-    const { id, password } = req.body;
-    
-    res.status(OK).json({});
-  } catch (error) {
-    logger.error("ERROR MESSAGE: " + error?.message);
-    res.status(ERROR).json({ success: false });
-  }
-};
-
-
 const changeUserInformation = async (req, res) => {
   try {
     const { data, where } = req.body;
@@ -96,6 +75,7 @@ const changeUserInformation = async (req, res) => {
     res.status(ERROR).json(error);
   }
 };
+
 const checkEmail = async (req, res) => {
   try {
     const { email } = req.body;
@@ -106,6 +86,16 @@ const checkEmail = async (req, res) => {
     res.status(ERROR).json({ success: false });
   }
 }
+
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await findAllUsers();
+    res.status(OK).json(users);
+  } catch (error) {
+    logger.error("ERROR MESSAGE: " + error?.message);
+    res.status(ERROR).json({ success: false });
+  }
+};
 
 const getHtmlResponse = (isVerified, errorName = null) => {
   return  `
@@ -156,8 +146,8 @@ export {
   registerUser,
   verifyEmail,
   login,
-  changePassword,
   changeUserInformation,
   loginUser,
   checkEmail,
+  getAllUsers
 };

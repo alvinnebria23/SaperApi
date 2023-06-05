@@ -97,14 +97,15 @@ const clickTimeTree = async (req, res) => {
 
 const updateUserToken = async (req, res) => {
   try {
-    const { appId, secretKey, userId} = req.body;
-    const response = await updateToken(userId, appId, secretKey);
+    const { type, appId } = req.body;
+    const response = await updateToken(type, appId);
     res.status(OK).json({ success: response });
   } catch (error) {
     logger.error("ERROR MESSAGE: " + error?.message);
     res.status(ERROR).json({ success: false });
   }
-}
+};
+
 export {
   checkApi,
   dashboard,

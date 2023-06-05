@@ -9,3 +9,12 @@ export const USER_TABLE_VALUES = {
     contactNumber: '09616346743',
     isValidEmail: true,
 };
+
+export const SHOPEE_API_VALUES = {
+    id: 1,
+    appId: "admin",
+    secretKey: "admin",
+    token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiZnJlZSIsImlhdCI6MTUxNjIzOTAyMn0.wf60Fs6cFuiGImXrFfUJxh0h9THsOsHyk2reyvNZBIg",
+    userId: 1,
+    type: "admin"
+};

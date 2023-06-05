@@ -68,8 +68,8 @@ const login = async ({ email, password }) => {
     const apiCredentials = await getShopeeApi(user.id);
     existedUser.appId = apiCredentials.appId;
     existedUser.secretKey = apiCredentials.secretKey;
+    existedUser.type = apiCredentials.type;
     existedUser.password = password;
-    existedUser.type = existedUser.email === "sapersapk@gmail.com" ? "admin" : "user";
     existedUser.token = apiCredentials.token;
     return { isFound: true, user: existedUser };
   } catch (error) {
@@ -166,6 +166,15 @@ const updateUser = async (data, where, isReturn ) => {
   }
 };
 
+const findAllUsers = async () => {
+  try {
+    const users = await User.findAll({ raw: true });
+    return users;
+  } catch (error) {
+    logger.error("ERROR MESSAGE: " + error?.message);
+    throw error;
+  }
+}
 
 export {
   register,
@@ -175,4 +184,5 @@ export {
   login,
   findEmail,
   findUserById,
+  findAllUsers
 };

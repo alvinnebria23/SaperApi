@@ -18,6 +18,7 @@ const registerShopeeApi = async (appId, secret, userId) => {
       appId: appId,
       secretKey: secret,
       userId: userId,
+      type: "free"
     });
   } catch (error) {
     logger.error("ERROR MESSAGE: " + error?.message);
@@ -70,19 +71,17 @@ const getShopeeApiByAppId = async (appId) => {
   }
 }
 
-const updateToken = async (userId, appId, secretKey) => {
+const updateToken = async (type, appId) => {
   try {
-    const token = generateToken({appId, secretKey, userId}, '30d')
-    await ShopeeApi.update({ token }, {
-      where: {
-        [Op.and]:[{ userId }, { appId }, { secretKey}]
-      }
-    })
+    const token = generateToken({ type }, '30d');
+    await ShopeeApi.update({ token, type }, {
+      where: { appId: appId }
+    });
     return true;
   } catch (error) {
     logger.error("ERROR MESSAGE: " + error?.message);
     throw error;
   }
-}
+};
 
 export { registerShopeeApi, updateShopeeApi, getShopeeApi, getShopeeApiByAppId, updateToken };
