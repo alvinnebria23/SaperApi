@@ -73,7 +73,10 @@ const getShopeeApiByAppId = async (appId) => {
 
 const updateToken = async (type, appId) => {
   try {
-    const token = generateToken({ type }, '30d');
+    const expirationDate = new Date();
+    expirationDate.setDate(expirationDate.getDate() + 30);
+    const formattedDate = expirationDate.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });;
+    const token = generateToken({ type, timestamp: Date.now(), expirationDate: formattedDate }, '30d');
     await ShopeeApi.update({ token, type }, {
       where: { appId: appId }
     });

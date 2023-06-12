@@ -4,6 +4,7 @@ import { User } from "./UserModel.js";
 import { ShopeeApi } from "./ShopeeApiModel.js";
 import { Link } from "./LinkModel.js";
 import { SHOPEE_API_VALUES, USER_TABLE_VALUES } from "../constants/DbConstants.js";
+import logger from "../loggers/logger.js";
 const sequelize = new Sequelize(DB, USER, PASSWORD, {
   host: HOST,
   dialect: _dialect,
@@ -23,7 +24,9 @@ sequelize
   .then(() => {
     console.log("authenticated");
   })
-  .catch((err) => console.log("Error " + err));
+  .catch((err) => {
+    logger.error(err);
+  });
 
 const db = {};
 db.Sequelize = Sequelize;

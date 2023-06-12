@@ -1,5 +1,5 @@
 import { OK, ERROR } from "../constants/HttpCodes.js"
-import { register, updateUser, login, findEmail, findAllUsers } from "../service/UserService.js";
+import { register, updateUser, login, findEmail, findAllValidUsers } from "../service/UserService.js";
 import { generateToken, verifyToken } from "../helpers/Jwt.js";
 import { sendVerificationMail } from "../helpers/NodeMailer.js";
 import logger from "../loggers/logger.js";
@@ -35,7 +35,7 @@ const verifyEmail = async (req, res) => {
     const response = await verifyToken(token);
     if(response.error){
       if(response.errorName === 'expired'){
-        const token = generateToken({ id: id, email: email }, '7d');
+        const token = generateToken({ id: id, email: email, timestamp: Date.now(), expirationDate: new Date().getDate() + 7 }, '7d');
         await sendVerificationMail(id, email, token);
       }
     }else{
@@ -87,9 +87,9 @@ const checkEmail = async (req, res) => {
   }
 }
 
-const getAllUsers = async (req, res) => {
+const getAllValidUsers = async (_, res) => {
   try {
-    const users = await findAllUsers();
+    const users = await findAllValidUsers();
     res.status(OK).json(users);
   } catch (error) {
     logger.error("ERROR MESSAGE: " + error?.message);
@@ -149,5 +149,5 @@ export {
   changeUserInformation,
   loginUser,
   checkEmail,
-  getAllUsers
+  getAllValidUsers
 };

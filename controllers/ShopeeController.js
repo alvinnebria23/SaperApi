@@ -99,6 +99,7 @@ const updateUserToken = async (req, res) => {
   try {
     const { type, appId } = req.body;
     const response = await updateToken(type, appId);
+    logger.info(`APP ID=${appId} UPGRADE=${type} SUCCESS=${response}`)
     res.status(OK).json({ success: response });
   } catch (error) {
     logger.error("ERROR MESSAGE: " + error?.message);

@@ -8,9 +8,9 @@ import { API_KEY, API_SECRET } from '../config/dbConfig.js';
  */
 const verifyToken = async (token) => {
   try {
-    return await jwt.verify(token, API_SECRET, async (error, decoded) => {
+    return await jwt.verify(token, API_KEY + API_SECRET, async (error, decoded) => {
       if(decoded){
-        return { error: false, errorName: '', id: decoded.id };
+        return { error: false, errorName: '', id: decoded.id, expirationDate:decoded.expirationDate };
       }
       if(error.name === 'TokenExpiredError'){
         return { error: true, errorName: 'expired', id: '' };

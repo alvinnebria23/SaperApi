@@ -4,7 +4,7 @@ import {
     loginUser,
     changeUserInformation,
     checkEmail,
-    getAllUsers,
+    getAllValidUsers,
   } from "../controllers/UserController.js";
 import checkToken from '../helpers/CheckToken.js';
 import checkAdminToken from '../helpers/CheckAdminToken.js';
@@ -15,5 +15,5 @@ router.post("/registerUser", registerUser);
 router.post("/loginUser", loginUser);
 router.post("/changeUserInformation", checkToken,  changeUserInformation);
 router.post("/checkEmail", checkEmail);
-router.post("/admin/getAllUsers", checkAdminToken, getAllUsers);
+router.post("/admin/getAllUsers", checkAdminToken, getAllValidUsers);
 export default router;

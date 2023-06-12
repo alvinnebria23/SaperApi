@@ -17,6 +17,10 @@ const ShopeeApi = (sequelize, DataTypes) => {
       type: DataTypes.STRING(1000),
       allowNull: true,
     },
+    type: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
   });
   return ShopeeApi;
 };

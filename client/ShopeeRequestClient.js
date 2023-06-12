@@ -1,6 +1,7 @@
 import axios from "axios";
 import crypto from 'crypto';
 import { SHOPEE_API_ENDPOINT } from "../constants/ShopeeConstants.js";
+import logger from "../loggers/logger.js";
 const ShopeeRequestCLient = async (appId, secretKey, query) => {
   try {
     const timestamp = Math.floor(new Date().getTime() / 1000);
@@ -19,7 +20,7 @@ const ShopeeRequestCLient = async (appId, secretKey, query) => {
     const { data } = response;
     return data;
   } catch (error) {
-    console.log(error);
+    logger.error("ERROR MESSAGE: " + error.message);
     return error;
   }
 };

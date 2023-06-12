@@ -28,10 +28,6 @@ const User = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: false,
     },
-    type: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
   }, {
     hooks: {
       beforeCreate: (user) => {

@@ -2,9 +2,10 @@ import db from "../models/index.js";
 import { registerShopeeApi, getShopeeApi } from "./ShopeeApiService.js";
 import { sendVerificationMail } from "../helpers/NodeMailer.js";
 import { Op } from "sequelize";
-import { generateToken } from "../helpers/Jwt.js";
+import { generateToken, verifyToken } from "../helpers/Jwt.js";
 import logger from "../loggers/logger.js";
 const User = db.users;
+const ShopeeApi = db.shopeeApis;
 
 /**
  * Registers a new user with the given user information and returns the created user.
@@ -35,7 +36,7 @@ const register = async (user) => {
     //Create shopee api
     registerShopeeApi(user.appId, user.secretKey, createdUser.id);
     // send email verification
-    const token = generateToken({ id: createdUser.id, email: createdUser.email }, '7d');
+    const token = generateToken({ id: createdUser.id, email: createdUser.email, timestamp: Date.now(), expirationDate: new Date().getDate() + 7  }, '7d');
     await sendVerificationMail(createdUser.id, createdUser.email, token);
     return createdUser;
   } catch (error) {
@@ -71,6 +72,11 @@ const login = async ({ email, password }) => {
     existedUser.type = apiCredentials.type;
     existedUser.password = password;
     existedUser.token = apiCredentials.token;
+    existedUser.monthly = apiCredentials.type === "free" ? "P0" : apiCredentials.type === "regular" ? "P500" : apiCredentials.type === "premium" && "P1,000";
+    if(existedUser.type !== "admin"){
+      const response = await verifyToken(apiCredentials.token);
+      existedUser.expirationDate = response?.expirationDate;
+    }
     return { isFound: true, user: existedUser };
   } catch (error) {
     logger.error("ERROR MESSAGE: " + error?.message);
@@ -166,9 +172,22 @@ const updateUser = async (data, where, isReturn ) => {
   }
 };
 
-const findAllUsers = async () => {
+const findAllValidUsers = async () => {
   try {
-    const users = await User.findAll({ raw: true });
+    const users = await User.findAll({
+      include: {
+        model: ShopeeApi,
+        attributes: ['appId', 'type']
+      },
+      where: {
+        [Op.and]: [
+          { email: { [Op.ne]: 'sapersapk@gmail.com' } },
+          { isValidEmail: true }
+        ]
+      },
+      attributes: ['id', 'email', 'name'],
+      raw: true
+    });
     return users;
   } catch (error) {
     logger.error("ERROR MESSAGE: " + error?.message);
@@ -184,5 +203,5 @@ export {
   login,
   findEmail,
   findUserById,
-  findAllUsers
+  findAllValidUsers
 };
