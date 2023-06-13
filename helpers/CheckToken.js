@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { INVALID, UNAUTHORIZED } from "../constants/HttpCodes";
+import { INVALID, UNAUTHORIZED } from "../constants/HttpCodes.js";
 
 const checkToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
