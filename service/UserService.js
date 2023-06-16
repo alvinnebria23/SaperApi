@@ -72,7 +72,6 @@ const login = async ({ email, password }) => {
     existedUser.type = apiCredentials.type;
     existedUser.password = password;
     existedUser.token = apiCredentials.token;
-    existedUser.monthly = apiCredentials.type === "free" ? "P0" : apiCredentials.type === "regular" ? "P500" : apiCredentials.type === "premium" && "P1,000";
     if(existedUser.type !== "admin"){
       const response = await verifyToken(apiCredentials.token);
       existedUser.expirationDate = response?.expirationDate;
