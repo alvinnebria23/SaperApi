@@ -65,5 +65,21 @@ const remove = async (where) => {
   }
 }
 
+const removeExpiredLinks = async (expiredDate) => {
+  try {
+    const response = await Link.destroy({
+      where: {
+        createdAt: {
+          [Op.lt]: expiredDate,
+        }
+      }
+    });
+    return response;
+  } catch (error) {
+    logger.error("ERROR MESSAGE: " + error?.message);
+    throw error;
+  }
+}
 
-export { saveLink, getLinks, update, remove };
+
+export { saveLink, getLinks, update, remove, removeExpiredLinks };

@@ -1,7 +1,7 @@
 import { ShopeeRequestCLient } from "../client/ShopeeRequestClient.js";
 import { ERROR, OK } from "../constants/HttpCodes.js";
 import logger from "../loggers/logger.js";
-import { saveLink, getLinks, update, remove } from "../service/LinkService.js";
+import { saveLink, getLinks, update, remove, removeExpiredLinks } from "../service/LinkService.js";
 import { getShopeeApiByAppId } from "../service/ShopeeApiService.js";
 import { getGenerateShortLinkQuery } from "../util/QueryStringUtil.js";
 
@@ -71,5 +71,16 @@ const removeLinks = async(req, res) => {
   }
 }
 
-
-export { generateAndSaveLink, retrieveGeneratedLinks, updateLink, removeLinks };
+const deleteExpiredLinks = async (_, res) => {
+  try {
+    const expiredDate = new Date();
+    expiredDate.setDate(expiredDate.getDate() - 90);
+    const response = await removeExpiredLinks(expiredDate); 
+    logger.info(`EXPIRED_DATE=${expiredDate} DELETED_ROWS=${response}`);
+    res.status(OK).json(response)
+  } catch (error) {
+    logger.error("ERROR MESSAGE: " + error?.message);
+    res.status(ERROR).json({ success: false });
+  }
+}
+export { generateAndSaveLink, retrieveGeneratedLinks, updateLink, removeLinks, deleteExpiredLinks };
