@@ -17,9 +17,9 @@ app.use("/api/v1/shopee", ShopeeRouter);
 app.use("/api/v1/link", LinkRouter);
 app.use("/user", ProxyUserRouter)
 
-// app.use("/test", () => {
-//   console.log('imhere');
-// });
+app.use("/test", (req, res) => {
+  res.send({ success: true });
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
