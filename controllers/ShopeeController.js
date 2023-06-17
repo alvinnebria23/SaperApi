@@ -1,6 +1,6 @@
 import { ERROR, OK } from "../constants/HttpCodes.js"
 import { ShopeeRequestCLient } from "../client/ShopeeRequestClient.js";
-import { getShopeeApi, getShopeeApiByAppId, updateShopeeApi, updateToken }  from "../service/ShopeeApiService.js"
+import { countRowsInMonth, getShopeeApi, getShopeeApiByAppId, updateShopeeApi, updateToken }  from "../service/ShopeeApiService.js"
 import { getConversionReport, processDashboard, processSubid, processClickTime } from "../helpers/ConversionReport.js";
 import { CLICKTIME_QUERY_VARIABLES, DASHBOARD_QUERY_VARIABLES, SUBID_QUERY_VARIABLES } from "../constants/ShopeeConstants.js";
 import { getConversionReportQuery } from "../util/QueryStringUtil.js";
@@ -107,6 +107,21 @@ const updateUserToken = async (req, res) => {
   }
 };
 
+const getAnalysis = async (req, res) => {
+  try {
+    const { targetMonth } = req.body;
+    const freeUserCount = await countRowsInMonth(targetMonth, "free");
+    const regularUserCount = await countRowsInMonth(targetMonth, "regular");
+    const premiumUserCount = await countRowsInMonth(targetMonth, "premium");
+    logger.info(`MONTH=${targetMonth} FREE=${freeUserCount} REGULAR=${regularUserCount} PREMIUM=${premiumUserCount}`);
+    res.status(OK).json({ analysis: [freeUserCount, regularUserCount, premiumUserCount] });
+  } catch (error) {
+    logger.error("ERROR MESSAGE: " + error?.message);
+    res.status(ERROR).json({ success: false });
+  }
+};
+
+
 export {
   checkApi,
   dashboard,
@@ -114,4 +129,5 @@ export {
   initial,
   clickTimeTree,
   updateUserToken,
+  getAnalysis
 };

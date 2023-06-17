@@ -92,4 +92,16 @@ const updateToken = async (type, appId) => {
   }
 };
 
-export { registerShopeeApi, updateShopeeApi, getShopeeApi, getShopeeApiByAppId, updateToken };
+const countRowsInMonth = async (targetMonth, type) => {
+  const count = await ShopeeApi.count({
+    where: {
+      [Op.and]: [
+        db.sequelize.where(db.sequelize.fn('MONTH', db.sequelize.col('updatedAt')), targetMonth),
+        { type: type },
+      ],
+    },
+  });
+  return count;
+};
+
+export { registerShopeeApi, updateShopeeApi, getShopeeApi, getShopeeApiByAppId, updateToken, countRowsInMonth };
