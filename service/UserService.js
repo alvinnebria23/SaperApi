@@ -66,15 +66,17 @@ const login = async ({ email, password }) => {
       return { isFound: false, message: 'Email and password does not match.'};
     }
     const existedUser = user.get({ plain: true });
-    const apiCredentials = await getShopeeApi(user.id);
-    existedUser.appId = apiCredentials.appId;
-    existedUser.secretKey = apiCredentials.secretKey;
-    existedUser.type = apiCredentials.type;
-    existedUser.password = password;
-    existedUser.token = apiCredentials.token;
-    if(existedUser.type !== "admin"){
+    if(existedUser.email !== process.env.EMAIL_ADDRESS){
+      const apiCredentials = await getShopeeApi(user.id);
+      existedUser.appId = apiCredentials.appId;
+      existedUser.secretKey = apiCredentials.secretKey;
+      existedUser.type = apiCredentials.type;
+      existedUser.password = password;
+      existedUser.token = apiCredentials.token;
       const response = await verifyToken(apiCredentials.token);
       existedUser.expirationDate = response?.expirationDate;
+    }else{
+      existedUser.token = generateToken({ type: "admin" });
     }
     return { isFound: true, user: existedUser };
   } catch (error) {
@@ -153,7 +155,7 @@ const findUserById = async (id) => {
  * @returns {object} - An object with a single property, isTaken, indicating whether the email address is already associated with a valid user account.
  * @throws {Error} - If there is an error searching the database for the email address.
  */
-const updateUser = async (data, where, isReturn ) => {
+const updateUser = async (data, where, isReturn) => {
   try {
     await User.update(data,{ where : where, individualHooks: true });
     if(isReturn){

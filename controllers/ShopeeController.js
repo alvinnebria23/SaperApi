@@ -1,10 +1,11 @@
 import { ERROR, OK } from "../constants/HttpCodes.js"
 import { ShopeeRequestCLient } from "../client/ShopeeRequestClient.js";
-import { countRowsInMonth, getShopeeApi, getShopeeApiByAppId, updateShopeeApi, updateToken }  from "../service/ShopeeApiService.js"
+import { getShopeeApi, getShopeeApiByAppId, updateShopeeApi, updateToken }  from "../service/ShopeeApiService.js"
 import { getConversionReport, processDashboard, processSubid, processClickTime } from "../helpers/ConversionReport.js";
 import { CLICKTIME_QUERY_VARIABLES, DASHBOARD_QUERY_VARIABLES, SUBID_QUERY_VARIABLES } from "../constants/ShopeeConstants.js";
 import { getConversionReportQuery } from "../util/QueryStringUtil.js";
 import { findUserById } from "../service/UserService.js";
+import { insertSubscriptionHistory } from "../service/SubscriptionHistoryService.js";
 import logger from "../loggers/logger.js";
 const checkApi = async (req, res) => {
   try {
@@ -97,30 +98,18 @@ const clickTimeTree = async (req, res) => {
 
 const updateUserToken = async (req, res) => {
   try {
-    const { type, appId } = req.body;
+    const { type, appId, userId } = req.body;
     const response = await updateToken(type, appId);
-    logger.info(`APP ID=${appId} UPGRADE=${type} SUCCESS=${response}`)
+    if(response) {
+      await insertSubscriptionHistory(userId, type);
+    }
+    logger.info(`[SUBSCRIPTION HISTORY] USER_ID=${userId} APP_ID=${appId} TYPE=${type} SUCCESS=${response}`);
     res.status(OK).json({ success: response });
   } catch (error) {
     logger.error("ERROR MESSAGE: " + error?.message);
     res.status(ERROR).json({ success: false });
   }
 };
-
-const getAnalysis = async (req, res) => {
-  try {
-    const { targetMonth } = req.body;
-    const freeUserCount = await countRowsInMonth(targetMonth, "free");
-    const regularUserCount = await countRowsInMonth(targetMonth, "regular");
-    const premiumUserCount = await countRowsInMonth(targetMonth, "premium");
-    logger.info(`MONTH=${targetMonth} FREE=${freeUserCount} REGULAR=${regularUserCount} PREMIUM=${premiumUserCount}`);
-    res.status(OK).json({ analysis: [freeUserCount, regularUserCount, premiumUserCount] });
-  } catch (error) {
-    logger.error("ERROR MESSAGE: " + error?.message);
-    res.status(ERROR).json({ success: false });
-  }
-};
-
 
 export {
   checkApi,
@@ -129,5 +118,4 @@ export {
   initial,
   clickTimeTree,
   updateUserToken,
-  getAnalysis
 };

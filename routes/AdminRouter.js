@@ -1,7 +1,8 @@
 import express from 'express';
 import { deleteExpiredLinks } from "../controllers/LinkController.js";
 import { getAllValidUsers } from '../controllers/UserController.js';
-import { getAnalysis, updateUserToken } from '../controllers/ShopeeController.js';
+import { updateUserToken } from '../controllers/ShopeeController.js';
+import { getAnalysis } from '../controllers/SubscriptionHistoryController.js';
 const router = express.Router();
 
 router.post("/getAllUsers", getAllValidUsers);

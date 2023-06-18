@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
-import { INVALID, UNAUTHORIZED } from "../constants/HttpCodes.js";
+import { UNAUTHORIZED } from "../constants/HttpCodes.js";
+import { updateTypeByAppId } from "../service/ShopeeApiService.js";
 import logger from "../loggers/logger.js";
 
 const checkToken = (req, res, next) => {
@@ -8,8 +9,12 @@ const checkToken = (req, res, next) => {
     const token = authHeader && authHeader.split(' ')[1];
     if (token == null) return res.sendStatus(UNAUTHORIZED);
 
-    jwt.verify(token, process.env.API_KEY + process.env.API_SECRET, (error) => {
+    jwt.verify(token, process.env.API_KEY + process.env.API_SECRET, async (error) => {
       if(error){
+        if(error.name === "TokenExpiredError"){
+          const { appId } = req.body;
+          await updateTypeByAppId(appId)
+        }
         logger.error(`ERROR_NAME=${error.name} APP_ID=${req.body.appId}`);
         return res.sendStatus(UNAUTHORIZED);
       };

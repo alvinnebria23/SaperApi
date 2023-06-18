@@ -9,6 +9,7 @@ const checkAdminToken = (req, res, next) => {
 
     jwt.verify(token, process.env.API_KEY + process.env.API_SECRET, (err, user) => {
       if (err) {
+        logger.error("ERROR MESSAGE: " + err?.message);
         return res.sendStatus(403);
       }
       if(user.type === "admin"){

@@ -88,20 +88,32 @@ const updateToken = async (type, appId) => {
     return true;
   } catch (error) {
     logger.error("ERROR MESSAGE: " + error?.message);
-    throw error;
+    return false
   }
 };
 
-const countRowsInMonth = async (targetMonth, type) => {
+const updateTypeByAppId = async (appId, type = "free") => {
+  try {
+    await ShopeeApi.update({ type: type }, {
+      where: { appId: appId }
+    });
+    return true;
+  } catch (error) {
+    logger.error("ERROR MESSAGE: " + error?.message);
+    return false
+  }
+};
+
+const countFreeUsers = async (targetMonth) => {
   const count = await ShopeeApi.count({
     where: {
       [Op.and]: [
         db.sequelize.where(db.sequelize.fn('MONTH', db.sequelize.col('updatedAt')), targetMonth),
-        { type: type },
+        { type: "free" },
       ],
     },
   });
   return count;
 };
 
-export { registerShopeeApi, updateShopeeApi, getShopeeApi, getShopeeApiByAppId, updateToken, countRowsInMonth };
+export { registerShopeeApi, updateShopeeApi, getShopeeApi, getShopeeApiByAppId, updateToken, countFreeUsers, updateTypeByAppId };
