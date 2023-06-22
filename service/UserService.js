@@ -36,7 +36,7 @@ const register = async (user) => {
     //Create shopee api
     registerShopeeApi(user.appId, user.secretKey, createdUser.id);
     // send email verification
-    const token = generateToken({ id: createdUser.id, email: createdUser.email, timestamp: Date.now(), expirationDate: new Date().getDate() + 7  }, '7d');
+    const token = generateToken({ id: createdUser.id, email: createdUser.email, timestamp: Date.now(), expirationDate: new Date().getDate() + 10  }, '10d');
     await sendVerificationMail(createdUser.id, createdUser.email, token);
     return createdUser;
   } catch (error) {
