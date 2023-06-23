@@ -14,11 +14,16 @@ const ShopeeApi = db.shopeeApis;
  */
 const registerShopeeApi = async (appId, secret, userId) => {
   try {
+    const expirationDate = new Date();
+    expirationDate.setDate(expirationDate.getDate() + 5);
+    const formattedDate = expirationDate.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });;
+    const token = generateToken({ type:"premium", timestamp: Date.now(), expirationDate: formattedDate }, '5d');
     return await ShopeeApi.create({
       appId: appId,
       secretKey: secret,
       userId: userId,
-      type: "free"
+      type: "premium",
+      token: token
     });
   } catch (error) {
     logger.error("ERROR MESSAGE: " + error?.message);
@@ -83,8 +88,32 @@ const updateToken = async (type, appId) => {
     return true;
   } catch (error) {
     logger.error("ERROR MESSAGE: " + error?.message);
-    throw error;
+    return false
   }
 };
 
-export { registerShopeeApi, updateShopeeApi, getShopeeApi, getShopeeApiByAppId, updateToken };
+const updateTypeByAppId = async (appId, type = "free") => {
+  try {
+    await ShopeeApi.update({ type: type }, {
+      where: { appId: appId }
+    });
+    return true;
+  } catch (error) {
+    logger.error("ERROR MESSAGE: " + error?.message);
+    return false
+  }
+};
+
+const countFreeUsers = async (targetMonth) => {
+  const count = await ShopeeApi.count({
+    where: {
+      [Op.and]: [
+        db.sequelize.where(db.sequelize.fn('MONTH', db.sequelize.col('updatedAt')), targetMonth),
+        { type: "free" },
+      ],
+    },
+  });
+  return count;
+};
+
+export { registerShopeeApi, updateShopeeApi, getShopeeApi, getShopeeApiByAppId, updateToken, countFreeUsers, updateTypeByAppId };

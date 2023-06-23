@@ -5,6 +5,7 @@ import { getConversionReport, processDashboard, processSubid, processClickTime }
 import { CLICKTIME_QUERY_VARIABLES, DASHBOARD_QUERY_VARIABLES, SUBID_QUERY_VARIABLES } from "../constants/ShopeeConstants.js";
 import { getConversionReportQuery } from "../util/QueryStringUtil.js";
 import { findUserById } from "../service/UserService.js";
+import { insertSubscriptionHistory } from "../service/SubscriptionHistoryService.js";
 import logger from "../loggers/logger.js";
 const checkApi = async (req, res) => {
   try {
@@ -97,9 +98,12 @@ const clickTimeTree = async (req, res) => {
 
 const updateUserToken = async (req, res) => {
   try {
-    const { type, appId } = req.body;
+    const { type, appId, userId } = req.body;
     const response = await updateToken(type, appId);
-    logger.info(`APP ID=${appId} UPGRADE=${type} SUCCESS=${response}`)
+    if(response) {
+      await insertSubscriptionHistory(userId, type);
+    }
+    logger.info(`[SUBSCRIPTION HISTORY] USER_ID=${userId} APP_ID=${appId} TYPE=${type} SUCCESS=${response}`);
     res.status(OK).json({ success: response });
   } catch (error) {
     logger.error("ERROR MESSAGE: " + error?.message);

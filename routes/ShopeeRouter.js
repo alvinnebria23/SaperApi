@@ -10,5 +10,4 @@ router.post('/dashboard', checkToken, dashboard)
 router.post('/subIdTree', checkToken, subIdTree);
 router.post('/initial',checkToken, initial);
 router.post('/clickTimeTree', checkToken, clickTimeTree);
-router.post('/updateUserToken', checkAdminToken, updateUserToken);
 export default router;

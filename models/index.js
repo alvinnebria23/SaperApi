@@ -3,7 +3,8 @@ import { Sequelize, DataTypes } from "sequelize";
 import { User } from "./UserModel.js";
 import { ShopeeApi } from "./ShopeeApiModel.js";
 import { Link } from "./LinkModel.js";
-import { SHOPEE_API_VALUES, USER_TABLE_VALUES } from "../constants/DbConstants.js";
+import { SubscriptionHistory } from "./SubscriptionHistory.js";
+import { USER_TABLE_VALUES } from "../constants/DbConstants.js";
 import logger from "../loggers/logger.js";
 const sequelize = new Sequelize(DB, USER, PASSWORD, {
   host: HOST,
@@ -35,6 +36,7 @@ db.sequelize = sequelize;
 db.users = User(sequelize, DataTypes);
 db.shopeeApis = ShopeeApi(sequelize, DataTypes);
 db.links = Link(sequelize, DataTypes);
+db.subscriptionHistory = SubscriptionHistory(sequelize, DataTypes);
 //Relations
 db.users.hasOne(db.shopeeApis, {
   sourceKey: "id",
@@ -47,6 +49,16 @@ db.users.hasOne(db.shopeeApis, {
 });
 
 db.users.hasMany(db.links, {
+  sourceKey: "id",
+  foreignKey: {
+    name: "userId",
+    allowNull: false,
+  },
+  onUpdate: "CASCADE",
+  onDelete: "CASCADE",
+});
+
+db.users.hasMany(db.subscriptionHistory, {
   sourceKey: "id",
   foreignKey: {
     name: "userId",
@@ -71,9 +83,6 @@ db.shopeeApis.belongsTo(db.users, {
   console.log('Database synchronized');
   await db.users.create(USER_TABLE_VALUES, {
     updateOnDuplicate: ['email'],
-  });
-  await db.shopeeApis.create(SHOPEE_API_VALUES, {
-    updateOnDuplicate: ['id']
   });
 })();
 

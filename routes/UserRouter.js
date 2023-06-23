@@ -4,16 +4,12 @@ import {
     loginUser,
     changeUserInformation,
     checkEmail,
-    getAllValidUsers,
   } from "../controllers/UserController.js";
-import checkToken from '../helpers/CheckToken.js';
-import checkAdminToken from '../helpers/CheckAdminToken.js';
 
 const router = express.Router();
 
 router.post("/registerUser", registerUser);
 router.post("/loginUser", loginUser);
-router.post("/changeUserInformation", checkToken,  changeUserInformation);
+router.post("/changeUserInformation",  changeUserInformation);
 router.post("/checkEmail", checkEmail);
-router.post("/admin/getAllUsers", checkAdminToken, getAllValidUsers);
 export default router;
