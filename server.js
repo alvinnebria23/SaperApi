@@ -23,10 +23,11 @@ app.use("/api/v1/link", LinkRouter);
 app.use("/user", ProxyUserRouter);
 
 // Load SSL certificate and private key 
-const options = { 
-	key: fs.readFileSync('/path/to/private_key.pem'), 
-	cert: fs.readFileSync('/path/to/certificate.pem') 
+const options = {
+        key: fs.readFileSync('/etc/letsencrypt/live/sapersph.com/privkey.pem'),
+        cert: fs.readFileSync('/etc/letsencrypt/live/sapersph.com/fullchain.pem')
 };
+
 // Create HTTPS server 
 const server = https.createServer(options, app);
 
