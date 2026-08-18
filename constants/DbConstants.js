@@ -3,9 +3,9 @@ dotenv.config();
 
 export const USER_TABLE_VALUES = {
     id:1,
-    email: 'sapersapk@gmail.com',
-    name: 'Alvin Nebria',
+    email: process.env.ADMIN_EMAIL,
+    name: process.env.ADMIN_NAME,
     password: process.env.ADMIN_PASSWORD,
-    contactNumber: '09616346743',
+    contactNumber: process.env.ADMIN_CONTACT,
     isValidEmail: true,
 };
