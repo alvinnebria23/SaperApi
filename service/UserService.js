@@ -201,7 +201,7 @@ const findAllValidUsers = async () => {
       },
       where: {
         [Op.and]: [
-          { email: { [Op.ne]: 'sapersapk@gmail.com' } },
+          { email: { [Op.ne]: process.env.ADMIN_EMAIL } },
           { isValidEmail: true }
         ]
       },
