@@ -1,0 +1,5 @@
+const OK = 200;
+const ERROR = 500;
+const UNAUTHORIZED = 401;
+const INVALID = 498;
+export { OK, ERROR, UNAUTHORIZED, INVALID };
